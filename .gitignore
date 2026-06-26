@@ -1,5 +1,13 @@
-test.py
-test/
-.env
-
+#python
 venv/
+
+__pycache__/
+
+#vscode
+.vscode/
+
+#firebase
+firebase-credentials.json
+
+#Other
+.env

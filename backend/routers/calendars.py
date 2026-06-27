@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import uuid
 
 from routers.events import EventResponse
@@ -17,14 +18,19 @@ router = APIRouter(prefix="/api/calendars", tags=["calendars"])
 class CalendarCreate(BaseModel):
     title: str
 
-# 編集用
 class CalendarUpdate(BaseModel):
-    title: str
+    title: Optional[str] = None
+    member_ids: Optional[List[str]] = None
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
 
 class CalendarResponse(BaseModel):
     id: uuid.UUID
     title: str
     owner_id: str
+    members: List[UserResponse] = []
 
 class CalendarDataResponse(BaseModel):
     events: List[EventResponse]
@@ -51,7 +57,13 @@ def get_calendars(
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    calendars = db.query(models.Calendar).filter(models.Calendar.owner_id == user_id).all()
+
+    calendars = db.query(models.Calendar).filter(
+        or_(
+            models.Calendar.owner_id == user_id,
+            models.Calendar.members.any(id=user_id)
+        )
+    ).all()
     return calendars
 
 # カレンダーの編集 (PATCH)
@@ -66,16 +78,19 @@ def update_calendar(
 
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
-
-    # 権限確認
     if calendar.owner_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="編集権限がありません")
 
-    # タイトルを更新
-    calendar.title = calendar_data.title
+    if calendar_data.title is not None:
+        calendar.title = calendar_data.title
+
+    if calendar_data.member_ids is not None:
+        valid_member_ids = [uid for uid in calendar_data.member_ids if uid != calendar.owner_id]
+        users = db.query(models.User).filter(models.User.id.in_(valid_member_ids)).all()
+        calendar.members = users
+
     db.commit()
     db.refresh(calendar)
-
     return calendar
 
 # カレンダーの削除 (DELETE)
@@ -112,16 +127,37 @@ def get_calendar_data(
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
 
-    if calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="このカレンダーのデータを閲覧する権限がありません")
+    # 権限確認
+    is_member = any(member.id == user_id for member in calendar.members)
+    if calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
-    # Events
     events = db.query(models.Event).filter(models.Event.calendar_id == calendar_id).all()
-
-    # ToDo
     todos = db.query(models.Todo).filter(models.Todo.calendar_id == calendar_id).all()
 
     return {
         "events": events,
         "todos": todos
     }
+
+# カレンダーからの脱退 (DELETE)
+@router.delete("/{calendar_id}/leave", status_code=status.HTTP_204_NO_CONTENT)
+def leave_calendar(
+    calendar_id: uuid.UUID,
+    user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    calendar = db.query(models.Calendar).filter(models.Calendar.id == calendar_id).first()
+
+    if not calendar:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
+    if calendar.owner_id == user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="オーナーは脱退できません。カレンダーを削除してください。")
+
+    # ユーザー確認
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user in calendar.members:
+        calendar.members.remove(user)
+        db.commit()
+
+    return

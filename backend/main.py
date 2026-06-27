@@ -18,8 +18,7 @@ app = FastAPI(title="Kosen Todo API", lifespan=lifespan)
 
 allowed_origins_raw = os.environ.get("ALLOWED_ORIGINS", "")
 
-# 2. カンマで分割し、前後の不要な空白を削除してリスト化
-# 空文字のパースで空要素 [''] が入るのを防ぐ条件付き
+
 origins = [
     origin.strip()
     for origin in allowed_origins_raw.split(",")

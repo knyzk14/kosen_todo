@@ -12,7 +12,7 @@ async def lifespan(app: FastAPI):
     models.Base.metadata.create_all(bind=engine)
     yield
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(title="Kosen Todo API", lifespan=lifespan)
 
 # ルーター登録
 app.include_router(calendars.router)

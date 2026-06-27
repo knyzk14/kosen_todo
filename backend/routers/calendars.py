@@ -4,6 +4,9 @@ from pydantic import BaseModel
 from typing import List
 import uuid
 
+from routers.events import EventResponse
+from routers.todos import TodoResponse
+
 from database import get_db
 import models
 from auth import get_current_user
@@ -22,6 +25,10 @@ class CalendarResponse(BaseModel):
     id: uuid.UUID
     title: str
     owner_id: str
+
+class CalendarDataResponse(BaseModel):
+    events: List[EventResponse]
+    todos: List[TodoResponse]
 
 # APIエンドポイント
 
@@ -92,3 +99,29 @@ def delete_calendar(
     db.commit()
 
     return
+
+# カレンダーデータ取得 (GET)
+@router.get("/{calendar_id}/data", response_model=CalendarDataResponse)
+def get_calendar_data(
+    calendar_id: uuid.UUID,
+    user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    calendar = db.query(models.Calendar).filter(models.Calendar.id == calendar_id).first()
+    if not calendar:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
+
+    if calendar.owner_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="このカレンダーのデータを閲覧する権限がありません")
+
+    # Events
+    events = db.query(models.Event).filter(models.Event.calendar_id == calendar_id).all()
+
+    # ToDo
+    todos = db.query(models.Todo).filter(models.Todo.calendar_id == calendar_id).all()
+
+    return {
+        "events": events,
+        "todos": todos
+    }

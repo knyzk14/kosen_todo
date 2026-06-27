@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 import uuid
 
 from database import get_db
@@ -27,6 +27,13 @@ class EventResponse(BaseModel):
     start_at: datetime
     end_at: datetime
 
+
+class EventUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    start_at: Optional[datetime] = None
+    end_at: Optional[datetime] = None
+
 # APIエンドポイント
 @router.post("", response_model=EventResponse)
 def create_event(
@@ -50,8 +57,60 @@ def create_event(
         start_at=event_data.start_at,
         end_at=event_data.end_at
     )
+
     db.add(new_event)
     db.commit()
     db.refresh(new_event)
 
     return new_event
+
+# 予定の編集 (PATCH)
+@router.patch("/{event_id}", response_model=EventResponse)
+def update_event(
+    event_id: uuid.UUID,
+    event_data: EventUpdate,
+    user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="予定が見つかりません")
+
+    calendar = db.query(models.Calendar).filter(models.Calendar.id == event.calendar_id).first()
+    if calendar.owner_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="この予定を編集する権限がありません")
+
+    # 更新
+    if event_data.title is not None:
+        event.title = event_data.title
+    if event_data.description is not None:
+        event.description = event_data.description
+    if event_data.start_at is not None:
+        event.start_at = event_data.start_at
+    if event_data.end_at is not None:
+        event.end_at = event_data.end_at
+
+    db.commit()
+    db.refresh(event)
+
+    return event
+
+# 予定の削除 (DELETE)
+@router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_event(
+    event_id: uuid.UUID,
+    user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="予定が見つかりません")
+
+    calendar = db.query(models.Calendar).filter(models.Calendar.id == event.calendar_id).first()
+    if calendar.owner_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="削除権限がありません")
+
+    db.delete(event)
+    db.commit()

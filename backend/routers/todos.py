@@ -45,8 +45,11 @@ def create_todo(
     calendar = db.query(models.Calendar).filter(models.Calendar.id == todo_data.calendar_id).first()
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
-    if calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="このカレンダーにToDoを追加する権限がありません")
+
+    is_member = any(member.id == user_id for member in calendar.members)
+
+    if calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     # 保存
     new_todo = models.Todo(
@@ -78,8 +81,11 @@ def update_todo(
     todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ToDoが見つかりません")
-    if todo.calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="編集権限がありません")
+
+    is_member = any(member.id == user_id for member in todo.calendar.members)
+
+    if todo.calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     # 更新
     todo.title = todo_data.title
@@ -96,8 +102,11 @@ def create_todo(
     calendar = db.query(models.Calendar).filter(models.Calendar.id == todo_data.calendar_id).first()
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
-    if calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="このカレンダーにToDoを追加する権限がありません")
+
+    is_member = any(member.id == user_id for member in calendar.members)
+
+    if calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     # 保存
     new_todo = models.Todo(
@@ -129,8 +138,11 @@ def update_todo(
     todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ToDoが見つかりません")
-    if todo.calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="編集権限がありません")
+
+    is_member = any(member.id == user_id for member in todo.calendar.members)
+
+    if todo.calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     # 更新
     if todo_data.title is not None:

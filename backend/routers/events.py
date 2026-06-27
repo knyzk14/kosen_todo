@@ -46,8 +46,10 @@ def create_event(
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
 
-    if calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="このカレンダーに予定を追加する権限がありません")
+    is_member = any(member.id == user_id for member in calendar.members)
+
+    if calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     # 保存
     new_event = models.Event(
@@ -78,8 +80,11 @@ def update_event(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="予定が見つかりません")
 
     calendar = db.query(models.Calendar).filter(models.Calendar.id == event.calendar_id).first()
-    if calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="この予定を編集する権限がありません")
+    is_member = any(member.id == user_id for member in calendar.members)
+
+    # 権限確認
+    if calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     # 更新
     if event_data.title is not None:
@@ -109,8 +114,11 @@ def delete_event(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="予定が見つかりません")
 
     calendar = db.query(models.Calendar).filter(models.Calendar.id == event.calendar_id).first()
-    if calendar.owner_id != user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="削除権限がありません")
+
+    is_member = any(member.id == user_id for member in calendar.members)
+
+    if calendar.owner_id != user_id and not is_member:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     db.delete(event)
     db.commit()

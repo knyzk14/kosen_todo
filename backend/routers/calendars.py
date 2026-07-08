@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -7,6 +7,7 @@ import uuid
 
 from routers.events import EventResponse
 from routers.todos import TodoResponse
+from routers.websocket import manager
 
 from database import get_db
 import models
@@ -44,6 +45,7 @@ class CalendarDataResponse(BaseModel):
 @router.post("", response_model=CalendarResponse)
 def create_calendar(
     calendar_data: CalendarCreate,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -93,6 +95,7 @@ def get_calendars(
 def update_calendar(
     calendar_id: uuid.UUID,
     calendar_data: CalendarUpdate,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -113,7 +116,13 @@ def update_calendar(
 
     db.commit()
     db.refresh(calendar)
-    
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "calendar_updated", "id": str(calendar.id)},
+        str(calendar.id)
+    )
+
     return {
         "id": calendar.id,
         "title": calendar.title,
@@ -127,6 +136,7 @@ def update_calendar(
 @router.delete("/{calendar_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_calendar(
     calendar_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -135,13 +145,17 @@ def delete_calendar(
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
 
-    # 削除権限確認
     if calendar.owner_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="削除権限がありません")
 
-    # 削除
     db.delete(calendar)
     db.commit()
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "calendar_deleted", "id": str(calendar_id)},
+        str(calendar_id)
+    )
 
     return
 
@@ -157,7 +171,6 @@ def get_calendar_data(
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
 
-    # 権限確認
     is_member = any(member.id == user_id for member in calendar.members)
     if calendar.owner_id != user_id and not is_member:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
@@ -174,6 +187,7 @@ def get_calendar_data(
 @router.delete("/{calendar_id}/leave", status_code=status.HTTP_204_NO_CONTENT)
 def leave_calendar(
     calendar_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -184,10 +198,15 @@ def leave_calendar(
     if calendar.owner_id == user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="オーナーは脱退できません。カレンダーを削除してください。")
 
-    # ユーザー確認
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user in calendar.members:
         calendar.members.remove(user)
         db.commit()
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "calendar_updated", "id": str(calendar_id)},
+        str(calendar_id)
+    )
 
     return

@@ -31,6 +31,8 @@ class CalendarResponse(BaseModel):
     title: str
     owner_id: str
     members: List[UserResponse] = []
+    event_count: int = 0
+    todo_count: int = 0
 
 class CalendarDataResponse(BaseModel):
     events: List[EventResponse]
@@ -49,7 +51,15 @@ def create_calendar(
     db.add(new_calendar)
     db.commit()
     db.refresh(new_calendar)
-    return new_calendar
+
+    return {
+        "id": new_calendar.id,
+        "title": new_calendar.title,
+        "owner_id": new_calendar.owner_id,
+        "members": new_calendar.members,
+        "event_count": 0,
+        "todo_count": 0
+    }
 
 # カレンダー一覧取得 (GET)
 @router.get("", response_model=List[CalendarResponse])
@@ -64,7 +74,19 @@ def get_calendars(
             models.Calendar.members.any(id=user_id)
         )
     ).all()
-    return calendars
+
+    result = []
+    for cal in calendars:
+        result.append({
+            "id": cal.id,
+            "title": cal.title,
+            "owner_id": cal.owner_id,
+            "members": cal.members,
+            "event_count": len(cal.events),
+            "todo_count": len(cal.todos)
+        })
+
+    return result
 
 # カレンダーの編集 (PATCH)
 @router.patch("/{calendar_id}", response_model=CalendarResponse)
@@ -91,7 +113,15 @@ def update_calendar(
 
     db.commit()
     db.refresh(calendar)
-    return calendar
+    
+    return {
+        "id": calendar.id,
+        "title": calendar.title,
+        "owner_id": calendar.owner_id,
+        "members": calendar.members,
+        "event_count": len(calendar.events),
+        "todo_count": len(calendar.todos)
+    }
 
 # カレンダーの削除 (DELETE)
 @router.delete("/{calendar_id}", status_code=status.HTTP_204_NO_CONTENT)

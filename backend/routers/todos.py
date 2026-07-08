@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
@@ -8,6 +8,7 @@ import uuid
 from database import get_db
 import models
 from auth import get_current_user
+from routers.websocket import manager
 
 router = APIRouter(prefix="/api/todos", tags=["todos"])
 
@@ -38,20 +39,18 @@ class TodoResponse(BaseModel):
 @router.post("", response_model=TodoResponse)
 def create_todo(
     todo_data: TodoCreate,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-
     calendar = db.query(models.Calendar).filter(models.Calendar.id == todo_data.calendar_id).first()
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
 
     is_member = any(member.id == user_id for member in calendar.members)
-
     if calendar.owner_id != user_id and not is_member:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
-    # 保存
     new_todo = models.Todo(
         calendar_id=todo_data.calendar_id,
         title=todo_data.title,
@@ -68,6 +67,12 @@ def create_todo(
     db.commit()
     db.refresh(new_todo)
 
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "todo_created", "id": str(new_todo.id)},
+        str(todo_data.calendar_id)
+    )
+
     return new_todo
 
 # ToDoの編集 (PATCH)
@@ -75,6 +80,7 @@ def create_todo(
 def update_todo(
     todo_id: uuid.UUID,
     todo_data: TodoUpdate,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -83,11 +89,9 @@ def update_todo(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ToDoが見つかりません")
 
     is_member = any(member.id == user_id for member in todo.calendar.members)
-
     if todo.calendar.owner_id != user_id and not is_member:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
-    # 更新
     if todo_data.title is not None:
         todo.title = todo_data.title
     if todo_data.due_date is not None:
@@ -103,12 +107,19 @@ def update_todo(
     db.commit()
     db.refresh(todo)
 
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "todo_updated", "id": str(todo.id)},
+        str(todo.calendar_id)
+    )
+
     return todo
 
 # ToDoの削除 (DELETE)
 @router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_todo(
     todo_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -118,5 +129,15 @@ def delete_todo(
     if todo.calendar.owner_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="削除権限がありません")
 
+    calendar_id = todo.calendar_id
+
     db.delete(todo)
     db.commit()
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "todo_deleted", "id": str(todo_id)},
+        str(calendar_id)
+    )
+
+    return

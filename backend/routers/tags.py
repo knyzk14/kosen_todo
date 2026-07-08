@@ -8,7 +8,6 @@ from database import get_db
 import models
 from auth import get_current_user
 
-# prefixを削除し、エンドポイントごとにフルパスを定義します
 router = APIRouter(tags=["tags"])
 
 # データ型定義

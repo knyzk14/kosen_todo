@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
@@ -7,6 +7,7 @@ import uuid
 from database import get_db
 import models
 from auth import get_current_user
+from routers.websocket import manager
 
 router = APIRouter(tags=["tags"])
 
@@ -32,6 +33,7 @@ class TagResponse(BaseModel):
 def create_tag(
     calendar_id: uuid.UUID,
     tag_data: TagCreate,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -50,6 +52,13 @@ def create_tag(
     db.add(new_tag)
     db.commit()
     db.refresh(new_tag)
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "tag_created", "id": str(new_tag.id)},
+        str(calendar_id)
+    )
+
     return new_tag
 
 # カレンダーのタグ一覧取得 (GET)
@@ -73,6 +82,7 @@ def get_tags(
 def update_tag(
     tag_id: uuid.UUID,
     tag_data: TagUpdate,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -91,12 +101,20 @@ def update_tag(
 
     db.commit()
     db.refresh(tag)
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "tag_updated", "id": str(tag.id)},
+        str(tag.calendar_id)
+    )
+
     return tag
 
 # タグの削除 (DELETE)
 @router.delete("/api/tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_tag(
     tag_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -108,5 +126,15 @@ def delete_tag(
     if calendar.owner_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
+    calendar_id = tag.calendar_id
+
     db.delete(tag)
     db.commit()
+
+    background_tasks.add_task(
+        manager.broadcast,
+        {"event": "tag_deleted", "id": str(tag_id)},
+        str(calendar_id)
+    )
+
+    return

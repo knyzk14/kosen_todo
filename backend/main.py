@@ -1,12 +1,23 @@
-from contextlib import asynccontextmanager
 import os
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from database import engine
 import models
 from routers import calendars, events, tags, todos, websocket
+
+# Cloudflareを経由した際の実IPを取得
+def get_real_ip(request: Request):
+    return request.headers.get("cf-connecting-ip", get_remote_address(request))
+
+# 1分間に300リクエスト
+limiter = Limiter(key_func=get_real_ip, default_limits=["300/minute"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,8 +27,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Kosen Todo API", lifespan=lifespan)
 
-allowed_origins_raw = os.environ.get("ALLOWED_ORIGINS", "")
+# レートリミットの設定をアプリに登録
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
+allowed_origins_raw = os.environ.get("ALLOWED_ORIGINS", "")
 
 origins = [
     origin.strip()

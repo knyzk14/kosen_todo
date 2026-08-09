@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 import uuid
 
 from database import get_db
@@ -18,11 +18,12 @@ class TodoCreate(BaseModel):
     title: str
     due_date: Optional[datetime] = None
     tag_ids: List[uuid.UUID] = []
+    assignments: Dict = {}
 
 class TodoUpdate(BaseModel):
     title: Optional[str] = None
     due_date: Optional[datetime] = None
-    is_completed: Optional[bool] = None
+    assignments: Optional[Dict] = None
     tag_ids: Optional[List[uuid.UUID]] = None
 
 class TodoResponse(BaseModel):
@@ -30,7 +31,7 @@ class TodoResponse(BaseModel):
     calendar_id: uuid.UUID
     title: str
     due_date: Optional[datetime]
-    is_completed: bool
+    assignments: Dict
     tag_ids: List[uuid.UUID] = []
 
 # APIエンドポイント
@@ -51,10 +52,17 @@ def create_todo(
     if calendar.owner_id != user_id and not is_member:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
+    if todo_data.assignments:
+        valid_uids = {calendar.owner_id} | {m.id for m in calendar.members}
+        invalid_uids = [uid for uid in todo_data.assignments.keys() if uid not in valid_uids]
+        if invalid_uids:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="カレンダーに所属していないユーザーが割り当てられています")
+
     new_todo = models.Todo(
         calendar_id=todo_data.calendar_id,
         title=todo_data.title,
-        due_date=todo_data.due_date
+        due_date=todo_data.due_date,
+        assignments=todo_data.assignments
     )
 
     if todo_data.tag_ids:
@@ -96,13 +104,30 @@ def update_todo(
         todo.title = todo_data.title
     if todo_data.due_date is not None:
         todo.due_date = todo_data.due_date
-    if todo_data.is_completed is not None:
-        todo.is_completed = todo_data.is_completed
     if todo_data.tag_ids is not None:
         tags = db.query(models.Tag).filter(models.Tag.id.in_(todo_data.tag_ids)).all()
         if len(tags) != len(todo_data.tag_ids):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="一部のタグが見つかりません")
         todo.tags = tags
+
+    # 辞書型の権限チェックと更新
+    if todo_data.assignments is not None:
+        # バリデーション: アサインされたユーザーがカレンダーに所属しているか確認
+        valid_uids = {todo.calendar.owner_id} | {m.id for m in todo.calendar.members}
+        invalid_uids = [uid for uid in todo_data.assignments.keys() if uid not in valid_uids]
+        if invalid_uids:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="カレンダーに所属していないユーザーが割り当てられています")
+
+        if todo.calendar.owner_id != user_id:
+            for uid, status_data in todo_data.assignments.items():
+                old_status = todo.assignments.get(uid, {})
+                if isinstance(status_data, dict) and isinstance(old_status, dict):
+                    if old_status.get("completed") != status_data.get("completed") and uid != user_id:
+                        raise HTTPException(
+                            status_code=status.HTTP_403_FORBIDDEN,
+                            detail="他人の完了状態は変更できません"
+                        )
+        todo.assignments = todo_data.assignments
 
     db.commit()
     db.refresh(todo)

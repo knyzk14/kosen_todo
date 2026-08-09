@@ -110,7 +110,9 @@ def update_calendar(
         calendar.title = calendar_data.title
 
     if calendar_data.member_ids is not None:
-        valid_member_ids = [uid for uid in calendar_data.member_ids if uid != calendar.owner_id]
+        # 重複削除
+        unique_member_ids = list(set(calendar_data.member_ids))
+        valid_member_ids = [uid for uid in unique_member_ids if uid != calendar.owner_id]
         users = db.query(models.User).filter(models.User.id.in_(valid_member_ids)).all()
         calendar.members = users
 

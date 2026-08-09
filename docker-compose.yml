@@ -15,8 +15,11 @@ services:
     build: .
     environment:
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/calendar_app_db
+      - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
     depends_on:
       - db
+    volumes:
+      - ./firebase-credentials.json:/app/firebase-credentials.json:ro
     restart: always
 
   cloudflared:

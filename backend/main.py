@@ -56,6 +56,10 @@ app.add_middleware(
     allow_headers=["*"],     # 全てのHTTPヘッダーを許可
 )
 
+@app.get("/api/ping", tags=["health"])
+def ping():
+    return {"status": "ok", "message": "pong"}
+
 # ルーター登録
 app.include_router(calendars.router)
 app.include_router(events.router)

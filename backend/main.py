@@ -25,7 +25,15 @@ async def lifespan(app: FastAPI):
     models.Base.metadata.create_all(bind=engine)
     yield
 
-app = FastAPI(title="Kosen Todo API", lifespan=lifespan, version="0.2.0")
+is_prod = os.environ.get("ENVIRONMENT") == "production"
+
+app = FastAPI(
+    title="Kosen Todo API",
+    lifespan=lifespan,
+    version="0.4.1",
+    docs_url=None if is_prod else "/docs",
+    redoc_url=None if is_prod else "/redoc",
+    openapi_url=None if is_prod else "/openapi.json")
 
 # レートリミットの設定をアプリに登録
 app.state.limiter = limiter

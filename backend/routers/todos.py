@@ -53,9 +53,9 @@ def create_todo(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
     if todo_data.assignments:
-        valid_uids = {calendar.owner_id} | {m.id for m in calendar.members}
-        invalid_uids = [uid for uid in todo_data.assignments.keys() if uid not in valid_uids]
-        if invalid_uids:
+        valid_usernames = {calendar.owner.email.split("@")[0]} | {m.email.split("@")[0] for m in calendar.members}
+        invalid_usernames = [uname for uname in todo_data.assignments.keys() if uname not in valid_usernames]
+        if invalid_usernames:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="カレンダーに所属していないユーザーが割り当てられています")
 
     new_todo = models.Todo(
@@ -112,17 +112,22 @@ def update_todo(
 
     # 辞書型の権限チェックと更新
     if todo_data.assignments is not None:
-        # バリデーション: アサインされたユーザーがカレンダーに所属しているか確認
-        valid_uids = {todo.calendar.owner_id} | {m.id for m in todo.calendar.members}
-        invalid_uids = [uid for uid in todo_data.assignments.keys() if uid not in valid_uids]
-        if invalid_uids:
+        # 現在の操作ユーザーのユーザー名を取得
+        current_user = db.query(models.User).filter(models.User.id == user_id).first()
+        current_username = current_user.email.split("@")[0]
+
+        # バリデーション
+        valid_usernames = {todo.calendar.owner.email.split("@")[0]} | {m.email.split("@")[0] for m in todo.calendar.members}
+        invalid_usernames = [uname for uname in todo_data.assignments.keys() if uname not in valid_usernames]
+        if invalid_usernames:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="カレンダーに所属していないユーザーが割り当てられています")
 
         if todo.calendar.owner_id != user_id:
-            for uid, status_data in todo_data.assignments.items():
-                old_status = todo.assignments.get(uid, {})
+            for uname, status_data in todo_data.assignments.items():
+                old_status = todo.assignments.get(uname, {})
                 if isinstance(status_data, dict) and isinstance(old_status, dict):
-                    if old_status.get("completed") != status_data.get("completed") and uid != user_id:
+                    # 変更: UIDではなくユーザー名(uname)で自身の完了状態か判定する
+                    if old_status.get("completed") != status_data.get("completed") and uname != current_username:
                         raise HTTPException(
                             status_code=status.HTTP_403_FORBIDDEN,
                             detail="他人の完了状態は変更できません"

@@ -24,13 +24,13 @@ class CalendarUpdate(BaseModel):
     member_usernames: Optional[List[str]] = None
 
 class UserResponse(BaseModel):
-    id: str
+    username: str
     email: str
 
 class CalendarResponse(BaseModel):
     id: uuid.UUID
     title: str
-    owner_id: str
+    owner_username: str
     members: List[UserResponse] = []
     event_count: int = 0
     todo_count: int = 0
@@ -54,11 +54,14 @@ def create_calendar(
     db.commit()
     db.refresh(new_calendar)
 
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    owner_username = user.email.split("@")[0]
+
     return {
         "id": new_calendar.id,
         "title": new_calendar.title,
-        "owner_id": new_calendar.owner_id,
-        "members": new_calendar.members,
+        "owner_username": owner_username,
+        "members": [],
         "event_count": 0,
         "todo_count": 0
     }
@@ -79,11 +82,13 @@ def get_calendars(
 
     result = []
     for cal in calendars:
+        owner_username = cal.owner.email.split("@")[0]
+        members = [{"username": m.email.split("@")[0], "email": m.email} for m in cal.members]
         result.append({
             "id": cal.id,
             "title": cal.title,
-            "owner_id": cal.owner_id,
-            "members": cal.members,
+            "owner_username": owner_username,
+            "members": members,
             "event_count": len(cal.events),
             "todo_count": len(cal.todos)
         })
@@ -129,11 +134,14 @@ def update_calendar(
         str(calendar.id)
     )
 
+    owner_username = calendar.owner.email.split("@")[0]
+    members = [{"username": m.email.split("@")[0], "email": m.email} for m in calendar.members]
+
     return {
         "id": calendar.id,
         "title": calendar.title,
-        "owner_id": calendar.owner_id,
-        "members": calendar.members,
+        "owner_username": owner_username,
+        "members": members,
         "event_count": len(calendar.events),
         "todo_count": len(calendar.todos)
     }

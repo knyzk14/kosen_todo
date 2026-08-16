@@ -21,7 +21,7 @@ class CalendarCreate(BaseModel):
 
 class CalendarUpdate(BaseModel):
     title: Optional[str] = None
-    member_ids: Optional[List[str]] = None
+    member_usernames: Optional[List[str]] = None
 
 class UserResponse(BaseModel):
     id: str
@@ -109,11 +109,15 @@ def update_calendar(
     if calendar_data.title is not None:
         calendar.title = calendar_data.title
 
-    if calendar_data.member_ids is not None:
-        # 重複削除
-        unique_member_ids = list(set(calendar_data.member_ids))
-        valid_member_ids = [uid for uid in unique_member_ids if uid != calendar.owner_id]
-        users = db.query(models.User).filter(models.User.id.in_(valid_member_ids)).all()
+    if calendar_data.member_usernames is not None:
+        unique_usernames = list(set(calendar_data.member_usernames))
+        users = []
+        for username in unique_usernames:
+            # 「ユーザー名@」で前方一致検索を行う
+            user = db.query(models.User).filter(models.User.email.startswith(f"{username}@")).first()
+            if user and user.id != calendar.owner_id:
+                users.append(user)
+
         calendar.members = users
 
     db.commit()

@@ -7,10 +7,13 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from datetime import datetime
 
 from database import engine
 import models
 from routers import calendars, events, tags, todos, websocket
+
+API_VERSION = "1.4.1"
 
 # Cloudflareを経由した際の実IPを取得
 def get_real_ip(request: Request):
@@ -30,7 +33,7 @@ is_prod = os.environ.get("ENVIRONMENT") == "production"
 app = FastAPI(
     title="Kosen Todo API",
     lifespan=lifespan,
-    version="0.4.1",
+    version=API_VERSION,
     docs_url=None if is_prod else "/docs",
     redoc_url=None if is_prod else "/redoc",
     openapi_url=None if is_prod else "/openapi.json")
@@ -58,7 +61,13 @@ app.add_middleware(
 
 @app.get("/api/ping", tags=["health"])
 def ping():
-    return {"status": "ok", "message": "pong"}
+    return {
+        "status": "ok",
+        "message": "pong",
+        "version": app.version,
+        "environment": "production" if is_prod else "development",
+        "timestamp": datetime.now().isoformat()
+    }
 
 # ルーター登録
 app.include_router(calendars.router)

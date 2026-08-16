@@ -13,7 +13,7 @@ from database import engine
 import models
 from routers import calendars, events, tags, todos, websocket
 
-API_VERSION = "1.5.2"
+API_VERSION = "1.5.3"
 
 # Cloudflareを経由した際の実IPを取得
 def get_real_ip(request: Request):

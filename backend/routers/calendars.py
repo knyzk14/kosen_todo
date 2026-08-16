@@ -31,7 +31,7 @@ class CalendarResponse(BaseModel):
     id: uuid.UUID
     title: str
     owner_username: str
-    members: List[UserResponse] = []
+    members: List[str] = []
     event_count: int = 0
     todo_count: int = 0
 
@@ -83,7 +83,7 @@ def get_calendars(
     result = []
     for cal in calendars:
         owner_username = cal.owner.email.split("@")[0]
-        members = [{"username": m.email.split("@")[0], "email": m.email} for m in cal.members]
+        members = [m.email.split("@")[0] for m in cal.members]
         result.append({
             "id": cal.id,
             "title": cal.title,
@@ -135,7 +135,7 @@ def update_calendar(
     )
 
     owner_username = calendar.owner.email.split("@")[0]
-    members = [{"username": m.email.split("@")[0], "email": m.email} for m in calendar.members]
+    members = [m.email.split("@")[0] for m in calendar.members]
 
     return {
         "id": calendar.id,

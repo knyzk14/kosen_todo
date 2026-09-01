@@ -17,7 +17,6 @@
     position:relative;
     z-index: 1;
 
-
 }
 .app-icon{
     width: 50px;
@@ -54,7 +53,7 @@
         100% 0%,
         40% 100%,
         0% 100%
-        
+
     );
 
     z-index:0;
@@ -80,10 +79,9 @@
 .days{
     display:grid;
     grid-template-columns: repeat(7,1fr);
-    
+
 
 }
-
 .days div{
     border: 1px solid black;
     height: 50px;
@@ -133,12 +131,91 @@
     justify-content: space-between;
 }
 
+.commands {
+    position: absolute;
+    top: 190px;
+    right: 1.5vw;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+    width: min(40vw, 600px);
+}
+
+.command-item {
+    position: relative;
+    width: 100%;
+}
+
+.command-item:nth-child(2) {
+    margin-left: -48px;
+}
+
+.command-item:nth-child(3) {
+    margin-left: -96px;
+}
+
+.command-button {
+    width: 100%;
+    min-height: 130px;
+    padding: 0 56px;
+    border: 2px solid #242424;
+    background-color: #ffffff;
+    color: #242424;
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    cursor: pointer;
+    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+    transition: transform .18s ease, background-color .18s ease;
+}
+
+.command-item::after {
+    content: "";
+    position: absolute;
+    top: calc(100% + 11px);
+    right: -2px;
+    width: 108%;
+    height: 9px;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent 0 4%,
+        rgba(255, 132, 166, .35) 4% 7%,
+        transparent 7% 10%,
+        rgba(255, 132, 166, .65) 10% 14%,
+        #ff84a6 14% 100%
+    );
+}
+
+.command-button:hover,
+.command-button:focus-visible {
+    background-color: #fff0f4;
+    transform: translateX(-6px);
+}
+
+.command-button:focus-visible {
+    outline: 3px solid #ff84a6;
+    outline-offset: 4px;
+}
+
+@media (max-width: 1050px) {
+    .commands {
+        position: relative;
+        top: auto;
+        right: auto;
+        width: min(360px, calc(100% - 100px));
+        margin: 150px 0 50px 50px;
+    }
+
+    .command-item:nth-child(2),
+    .command-item:nth-child(3) {
+        margin-left: 0;
+    }
+}
 
 
 
 
 
 
-
-
-    

@@ -66,4 +66,22 @@ prev.addEventListener("click", function(){
 
 
 
+prev.addEventListener("click", function() {
+    days.classList.add("slide-out-prev");
 
+    setTimeout(function() {
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        createCalendar(currentYear, currentMonth);
+
+        days.classList.remove("slide-out-prev");
+        days.classList.add("slide-in-prev");
+
+        setTimeout(function() {
+            days.classList.remove("slide-in-prev");
+        }, 200);
+    }, 200);
+});

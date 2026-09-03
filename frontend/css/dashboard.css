@@ -1,4 +1,26 @@
 /* applicationメニュー */
+/* ==============================
+    Base & Layout
+   ============================== */
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(164, 199, 232, 0.83);
+    clip-path: polygon(0% 0%, 100% 0%, 40% 100%, 0% 100%);
+}
+
+main {
+    height: 70%;
+    margin-top: 70px;
+}
+
+/* ==============================
+    App Menu
+   ============================== */
 .app-menu {
     position: relative;
     z-index: 1;
@@ -31,110 +53,14 @@
     transition: all 0.2s ease;
 }
 
-/* 背景 */
-.background {
-    position: fixed;
-    left: 0;
-    top: 0;
-
-    width: 100vw;
-    height: 100vh;
-
-    background-color: rgba(164, 199, 232, 0.83);
-
-    clip-path: polygon(
-        0% 0%,
-        100% 0%,
-        40% 100%,
-        0% 100%
-    );
-
-    z-index: 0;
-}
-/* カレンダー */
-.week {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    width: 100%;
+.app-icon:hover:not(.disabled) {
+    background-color: var(--background-color-hover);
+    transform: scale(1.1);
 }
 
-.week div {
-    border: 1px solid black;
-    border-width: 1.5px;
-
-    position: relative;
-    z-index: 1;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    width: 100%;
-}
-
-.days div {
-    border: 1px solid black;
-    min-height: 60px;
-    max-height: 100px;
-    height: auto;
-    border-width:1.5px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-
-    position: relative;
-    z-index: 1;
-}
-
-.calendar {
-    margin-top: 100px;
-    width: 100%;
-    max-width: 1000px;
-    height: auto;
-    min-height: 563px;
-    aspect-ratio: 16 / 9;
-    margin-left: 50px;
-
-    border: 2px solid black;
-
-    position: relative;
-    z-index: 1;
-    background-color: white;
-}
-
-.calender-year {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    position: relative;
-    z-index: 1;
-    padding: 10px 0;
-}
-
-.calender-header-button {
-    position: absolute;
-    top: 50%;
-    left: -5%;
-
-    width: 110%;
-
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-}
-
-.calender-header-button > * {
-    pointer-events: auto;
-}
-
-/* コマンド */
+/* ==============================
+   Commands Button Layout
+   ============================== */
 .commands {
     position: absolute;
     top: 190px;
@@ -204,7 +130,7 @@
 }
 
 /* ==============================
-    Media Queries
+   Media Queries
    ============================== */
 @media (max-width: 1050px) {
     .commands {

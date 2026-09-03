@@ -1,8 +1,11 @@
 :root {
     --background-color: #f0f0f0;
     --background-color-hover: #e0e0e0;
+    --background-color-disabled: #f3f0f0;
     --border-color: #505050;
     --sidebar-background-color: #f0f0f0;
     --text-color: #2b2a2a;
     --sub-text-color: #505050;
+    --mute-text-color: #808080;
+    --text-color-disabled: #a7a7a7;
 }

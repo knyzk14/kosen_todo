@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="../css/colors.css">
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/calender.css">
     <title>Kosen todo</title>
 
     <script src="/js/preload.js" defer></script>
@@ -28,14 +29,29 @@
             <!--　カレンダー　-->
             <section class="calendar">
                 <div class="calender-header">
+                    <div class="calender-year">
+                        <div class="year-month">
+                        <h2 id="month-title">12</h2>
+                        <div class="sub-title">
+                            <h2 id="year-title">2024</h2>
+                            <h2 id="month-name">December</h2>
+                        </div>
+                    </div>
                     <div class="calender-header-button">
                         <button id="prev">◀</button>
                         <button id="next">▶</button>
                     </div>
-                    <div class="calender-year">
-                        <h2 id="month-title"></h2>
+                    <div class="overview">
+                        <hr>
+                        <ul>
+                            <li>予定: 0</li>
+                            <li>タスク: 0</li>
+                        </ul>
+                        <hr>
                     </div>
                     </div>
+                    </div>
+                <div class="calender-container">
                     <div class="week">
                         <div>日</div>
                         <div>月</div>
@@ -44,19 +60,19 @@
                         <div>木</div>
                         <div>金</div>
                         <div>土</div>
-                        </div>
+                    </div>
+                    <hr>
                     <div class="days">
                     <!-- 日付　-->
-                    
+                    </div>
                 </div>
             </section>
-            <!-- コマンド -->
-            <section class="commands">
+            <!--<section class="commands">
                 <div class="command-item"><button class="command-button" type="button">スケジュールツリー</button></div>
                 <div class="command-item"><button class="command-button" type="button">空き時間検索</button></div>
                 <div class="command-item"><button class="command-button" type="button">ToDoリスト</button></div>
-            </section>
+            </section>-->
             <script src="../js/dashboard.js"></script>
-        </main> 
+        </main>
     </body>
 </html>

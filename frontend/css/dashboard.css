@@ -1,150 +1,70 @@
+/* ==============================
+   Base & Layout
+   ============================== */
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(164, 199, 232, 0.83);
+    clip-path: polygon(0% 0%, 100% 0%, 40% 100%, 0% 100%);
+}
+
+main {
+    height: 70%;
+    margin-top: 70px;
+}
+
+/* ==============================
+   App Menu
+   ============================== */
 .app-menu {
-    display: flex;
-    flex-direction: row;
-    gap: 2rem;
-    width: 100%;
-    max-width: 1200px;
-    min-height: 80px;
-    border: 5px solid black;
-    padding: 3px;
-    padding-left: 20px;
-    border-radius: 5px;
-    align-items: center;
-    padding-bottom: 10px;
-    box-sizing: border-box;
-
-    overflow-x: auto;
-
     position: relative;
     z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100px;
+    margin-left: 20px;
+    padding: 3px 3px 10px 20px;
+    box-sizing: border-box;
+    border-bottom: 2px solid var(--sub-text-color);
+    overflow-x: auto;
 }
 
 .app-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 2px solid black;
-
-    background-color: white;
-
     display: flex;
-    flex-direction: row;
     justify-content: center;
     align-items: center;
-
     flex-shrink: 0;
-
+    width: 65px;
+    height: 65px;
+    background-color: #ffffff;
+    border: 2px solid var(--mute-text-color);
+    border-radius: 30px;
+    font-size: 30px;
     cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
 }
 
-.background {
-    position: fixed;
-    left: 0;
-    top: 0;
-
-    width: 100vw;
-    height: 100vh;
-
-    background-color: rgba(164, 199, 232, 0.83);
-
-    clip-path: polygon(
-        0% 0%,
-        100% 0%,
-        40% 100%,
-        0% 100%
-    );
-
-    z-index: 0;
+.app-icon:hover:not(.disabled) {
+    background-color: var(--background-color-hover);
+    transform: scale(1.1);
 }
 
-.week {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    width: 100%;
-}
-
-.week div {
-    border: 1px solid black;
-    border-width: 1.5px;
-
-    position: relative;
-    z-index: 1;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    width: 100%;
-}
-
-.days div {
-    border: 1px solid black;
-    min-height: 60px;
-    max-height: 100px;
-    height: auto;
-    border-width:1.5px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-
-    position: relative;
-    z-index: 1;
-}
-
-.calendar {
-    margin-top: 100px;
-    width: 100%;
-    max-width: 1000px;
-    height: auto;
-    min-height: 563px;
-    aspect-ratio: 16 / 9;
-    margin-left: 50px;
-
-    border: 2px solid black;
-
-    position: relative;
-    z-index: 1;
-    background-color: white;
-}
-
-.calender-year {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    position: relative;
-    z-index: 1;
-    padding: 10px 0;
-}
-
-.calender-header-button {
-    position: absolute;
-    top: 50%;
-    left: -5%;
-
-    width: 110%;
-
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-}
-
-.calender-header-button > * {
-    pointer-events: auto;
-}
-
+/* ==============================
+   Commands Button Layout
+   ============================== */
 .commands {
     position: absolute;
     top: 190px;
     right: 1.5vw;
     z-index: 1;
-
     display: flex;
     flex-direction: column;
     gap: 34px;
@@ -165,21 +85,6 @@
     margin-left: -16%;
 }
 
-.command-button {
-    width: 100%;
-    min-height: 130px;
-    padding: 0 5vw;
-    border: 2px solid #242424;
-    background-color: #ffffff;
-    color: #242424;
-    font-size: clamp(1rem, 1.5vw + 0.5rem, 1.55rem);
-    font-weight: 700;
-    letter-spacing: .08em;
-    cursor: pointer;
-    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
-    transition: transform .18s ease, background-color .18s ease;
-}
-
 .command-item::after {
     content: "";
     position: absolute;
@@ -197,6 +102,21 @@
     );
 }
 
+.command-button {
+    width: 100%;
+    min-height: 130px;
+    padding: 0 5vw;
+    background-color: #ffffff;
+    border: 2px solid #242424;
+    color: #242424;
+    font-weight: 700;
+    font-size: clamp(1rem, 1.5vw + 0.5rem, 1.55rem);
+    letter-spacing: .08em;
+    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
+    cursor: pointer;
+    transition: transform .18s ease, background-color .18s ease;
+}
+
 .command-button:hover,
 .command-button:focus-visible {
     background-color: #fff0f4;
@@ -208,6 +128,9 @@
     outline-offset: 4px;
 }
 
+/* ==============================
+   Media Queries
+   ============================== */
 @media (max-width: 1050px) {
     .commands {
         position: relative;

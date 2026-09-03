@@ -4,6 +4,17 @@ const month_title = document.querySelector("#month-title");
 const year_title = document.querySelector("#year-title");
 const month_name = document.querySelector("#month-name");
 
+const modal=document.querySelector("#schedule-modal");
+
+
+const startTime=document.querySelector("#start-time");
+const endTime=document.querySelector("#end-time");
+
+const scheduleTitle=document.querySelector("#schedule-title");
+
+const schedule_ok=document.querySelector("#schedule-ok");
+const scheduleCancel=document.querySelector("#schedule-cancel");
+
 const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -28,6 +39,8 @@ function createCalendar(year, month) {
     for (let i = 1; i <= lastDay.getDate(); i++) {
         const day = document.createElement("div");
         day.textContent = i;
+        day.classList.add("day");
+        day.dataset.day=i;
         days.appendChild(day);
     }
 }
@@ -84,4 +97,42 @@ prev.addEventListener("click", function() {
             days.classList.remove("slide-in-prev");
         }, 200);
     }, 200);
+});
+
+days.addEventListener("click",function(event){
+    if(!event.target.classList.contains("day")){
+        return;
+    }
+    const clickedDay=event.target.dataset.day;
+    const rect = event.target.getBoundingClientRect();
+
+    console.log("クリックした日",clickedDay);
+
+    startTime.value="";
+    endTime.value="";
+    scheduleTitle.value="";
+
+    modal.style.display = "flex";
+    modal.style.position="fixed";
+    modal.style.left=rect.left+"px";
+    modal.style.top=rect.bottom+"px";
+});
+schedule_ok.addEventListener("click",function(){
+    const start=startTime.value;
+    const end = endTime.value;
+    const title =scheduleTitle.value;
+
+    if(start===""||end===""||title===""){
+        alert("入力されていない項目があります．")
+    }
+
+    console.log("開始",start);
+    console.log("終了",end);
+    console.log("予定",title);
+
+    modal.style.display="none";
+});
+
+scheduleCancel.addEventListener("click",function(){
+    modal.style.display="none";
 });

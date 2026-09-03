@@ -72,24 +72,23 @@
                 <div class="command-item"><button class="command-button" type="button">空き時間検索</button></div>
                 <div class="command-item"><button class="command-button" type="button">ToDoリスト</button></div>
             </section>-->
-            <script src="../js/dashboard.js"></script>
-        </main> 
         <div class="popup">
-            <div id="schedule-model" class="model">
-                <div class="model-content">
+            <div id="schedule-modal" class="modal">
+                <div class="modal-content">
                     <div class="time-input">
                         <input type="time" id="start-time">
                         <span>～</span>
                         <input type="time" id="end-time">
                     </div>
                     <textarea id="schedule-title" placeholder="タイトルを入力..."></textarea>
-                    <div class="model-buttons">
+                    <div class="modal-buttons">
                         <button id="schedule-ok">入力</button>
                         <button id="schedule-cancel">キャンセル</button>
                     </div>
                 </div>
             </div>
         </div>
+        <script src="../js/dashboard.js"></script>
         </main>
     </body>
 </html>

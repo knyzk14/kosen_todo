@@ -1,4 +1,3 @@
-/* applicationメニュー */
 /* ==============================
     Base & Layout
    ============================== */
@@ -59,7 +58,7 @@ main {
 }
 
 /* ==============================
-   Commands Button Layout
+    Commands Button Layout
    ============================== */
 .commands {
     position: absolute;
@@ -130,7 +129,7 @@ main {
 }
 
 /* ==============================
-   Media Queries
+    Media Queries
    ============================== */
 @media (max-width: 1050px) {
     .commands {
@@ -149,25 +148,16 @@ main {
 }
 
 /* スケジュールの入力欄 */
-.model{
-    /* display: none;可視化のためにコメントアウトしている */
-    display: flex;
-    position:fixed;
-    top:0;
-    left:0;
-
-    width: 30%;
-    height: 60%;
-
-    
+.modal{
+    display: none;
 
     justify-content: center;
     align-items: center;
 
-    z-index: 1000;
+    z-index: 2;
 }
 
-.model-content{
+.modal-content{
     padding:15px;
     width: 270px;
 
@@ -206,11 +196,25 @@ main {
     padding:10px;
 }
 
-.model-buttons{
+.modal-buttons{
     display:flex;
     justify-content:right;
 
     gap:20px;
 
     margin-top:10px;
+}
+
+.modal-buttons button{
+    background:#fdfdfd;
+
+    border:none;
+    border-bottom:1px solid black;
+
+    padding: 5px 15px;
+
+    cursor:pointer;
+
+    font-size:16px
+
 }

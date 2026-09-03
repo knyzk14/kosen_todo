@@ -84,7 +84,7 @@
 }
 .days div{
     border: 1px solid black;
-    height: 50px;
+    height: 45px;
     border-width:1.5px;
 
     display:flex;
@@ -100,7 +100,7 @@
     top:100px;
 
     width: 700px;
-    height:363px;
+    
 
     margin-left:50px;
 

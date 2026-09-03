@@ -29,61 +29,25 @@
             <section class="calendar">
                 <div class="calender-header">
                     <div class="calender-header-button">
-                        <button>◀</button>
-                        <button>▶</button>
+                        <button id="prev">◀</button>
+                        <button id="next">▶</button>
                     </div>
                     <div class="calender-year">
-                        <h2>20xx年 x月のカレンダー</h2>
+                        <h2 id="month-title"></h2>
                     </div>
                     </div>
                     <div class="week">
                         <div>日</div>
-                        <div>土</div>
                         <div>月</div>
                         <div>火</div>
                         <div>水</div>
                         <div>木</div>
                         <div>金</div>
+                        <div>土</div>
                         </div>
                     <div class="days">
                     <!-- 日付　-->
-
-                    <!--  いまはお試しで書いている．jsを書くときに削除する予定  -->
-                    <div>1</div>
-                    <div>2</div>
-                    <div>3</div>
-                    <div>4</div>
-                    <div>5</div>
-                    <div>6</div>
-                    <div>7</div>
-
-                    <div>8</div>
-                    <div>9</div>
-                    <div>10</div>
-                    <div>11</div>
-                    <div>12</div>
-                    <div>13</div>
-                    <div>14</div>
-
-                    <div>15</div>
-                    <div>16</div>
-                    <div>17</div>
-                    <div>18</div>
-                    <div>19</div>
-                    <div>20</div>
-                    <div>21</div>
-
-                    <div>22</div>
-                    <div>23</div>
-                    <div>24</div>
-                    <div>25</div>
-                    <div>26</div>
-                    <div>27</div>
-                    <div>28</div>
-
-                    <div>29</div>
-                    <div>30</div>
-                    <div>31</div>
+                    
                 </div>
             </section>
             <!-- コマンド -->
@@ -92,6 +56,7 @@
                 <div class="command-item"><button class="command-button" type="button">空き時間検索</button></div>
                 <div class="command-item"><button class="command-button" type="button">ToDoリスト</button></div>
             </section>
+            <script src="../js/dashboard.js"></script>
         </main> 
     </body>
 </html>

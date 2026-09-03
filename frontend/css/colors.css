@@ -1,4 +1,4 @@
-:root {
+:root, :root[data-theme="light"] {
     --background-color: #f0f0f0;
     --background-color-hover: #e0e0e0;
     --background-color-disabled: #f3f0f0;
@@ -8,4 +8,28 @@
     --sub-text-color: #505050;
     --mute-text-color: #808080;
     --text-color-disabled: #a7a7a7;
+    --calender-background-color: #ffffff;
+    --calender-appicon-color: #ffffff;
+    --common-background-before: #fbecff;
+    --common-background-after: #e6f7ff;
+
+    --dark-bg-opacity: 0;
+}
+
+:root[data-theme="dark"] {
+    --background-color: #1a1a1a;
+    --background-color-hover: #2d2d2d;
+    --background-color-disabled: #252525;
+    --border-color: #6b6b6b;
+    --sidebar-background-color: #202020;
+    --text-color: #e0e0e0;
+    --sub-text-color: #a0a0a0;
+    --mute-text-color: #707070;
+    --text-color-disabled: #5a5a5a;
+    --calender-background-color: #222222;
+    --calender-appicon-color: #222222;
+    --common-background-before: #272627;
+    --common-background-after: #303131;
+
+    --dark-bg-opacity: 1;
 }

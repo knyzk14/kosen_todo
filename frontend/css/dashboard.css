@@ -1,3 +1,4 @@
+/* applicationメニュー */
 .app-menu {
     display: flex;
     flex-direction: row;
@@ -37,6 +38,7 @@
     cursor: pointer;
 }
 
+/* 背景 */
 .background {
     position: fixed;
     left: 0;
@@ -56,7 +58,7 @@
 
     z-index: 0;
 }
-
+/* カレンダー */
 .week {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -139,6 +141,7 @@
     pointer-events: auto;
 }
 
+/* コマンド */
 .commands {
     position: absolute;
     top: 190px;
@@ -222,4 +225,23 @@
     .command-item:nth-child(3) {
         margin-left: 0;
     }
+}
+
+/* スケジュールの入力欄 */
+.model{
+    /* display: none;可視化のためにコメントアウトしている */
+
+    position:fixed;
+    top:0;
+    left:0;
+
+    width: 50%;
+    height: 50%;
+
+    background-color: black;
+
+    justify-content: center;
+    align-items: center;
+
+    z-index: 1000;
 }

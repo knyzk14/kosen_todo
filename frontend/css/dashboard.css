@@ -150,6 +150,10 @@ main {
 /* スケジュールの入力欄 */
 .modal{
     display: none;
+    position: fixed;
+
+    top: 0;
+    left: 0;
 
     justify-content: center;
     align-items: center;
@@ -165,6 +169,20 @@ main {
     border:2px solid;
     border-color: #333;
 }
+.model-header{
+    padding:8px;
+    margin-bottom:15px;
+
+    background:#eee;
+
+    cursor:grab;
+    user-select:none;
+}
+
+.modal-header:active {
+    cursor: grabbing;
+}
+
 
 .time-input{
     position:flex;

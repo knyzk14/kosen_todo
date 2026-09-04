@@ -169,18 +169,18 @@ main {
     border:2px solid;
     border-color: #333;
 }
-.model-header{
+.modal-header{
     padding:8px;
     margin-bottom:15px;
 
     background:#eee;
 
-    cursor:grab;
-    user-select:none;
+    cursor:grab; 
+    user-select:none; 
 }
 
 .modal-header:active {
-    cursor: grabbing;
+    cursor: grabbing; 
 }
 
 

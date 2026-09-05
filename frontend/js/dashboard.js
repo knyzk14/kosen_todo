@@ -8,10 +8,13 @@ const STORAGE_KEY = 'app_icons';
 const modal = document.querySelector("#schedule-modal");
 const modalHeader = document.querySelector("#modal-header");
 const modalContent = document.querySelector(".modal-content");
+const showDay = document.querySelector("#showDay");
 
 let selectedDay = null;
 let selectedYear = null;
 let selectedMonth = null;
+
+let data={};
 
 const startTime = document.querySelector("#start-time");
 const endTime = document.querySelector("#end-time");
@@ -119,19 +122,21 @@ days.addEventListener("click", function(event) {
     selectedMonth = currentMonth;
     selectedYear = currentYear;
 
-    const key = `schedule-${selectedYear}-${selectedMonth}-${selectedDay}`;
-    const saved_schedule = localStorage.getItem(key);
+    showDay.textContent =  `${selectedMonth + 1}月${selectedDay}日のカレンダーの入力`;
 
-    if (saved_schedule) {
-        const data = JSON.parse(saved_schedule);
-        startTime.value = data.startTime;
-        endTime.value = data.endTime;
-        scheduleTitle.value = data.title; 
-    } else {
-        startTime.value = "";
-        endTime.value = "";
-        scheduleTitle.value = "";
-    }
+    // const key = `schedule-${selectedYear}-${selectedMonth+1}-${selectedDay}`;
+    // const saved_schedule = localStorage.getItem(key);
+
+    // if (saved_schedule) {
+    //     const data = JSON.parse(saved_schedule);
+    //     startTime.value = data.startTime;
+    //     endTime.value = data.endTime;
+    //     scheduleTitle.value = data.title; 
+    // } else {
+    //     startTime.value = "";
+    //     endTime.value = "";
+    //     scheduleTitle.value = "";
+    // }
 
     const rect = event.target.getBoundingClientRect();
 
@@ -146,20 +151,34 @@ schedule_ok.addEventListener("click", function() {
     const end = endTime.value;
     const title = scheduleTitle.value;
 
+    const year = selectedYear;
+    const month = selectedMonth + 1;
+    const day = selectedDay;
+    const time = `${start} - ${end}`;   
+
+    if (!data[year]) {
+        data[year] = {};
+    }
+
+    if (!data[year][month]) {
+        data[year][month] = {};
+    }
+
+    if (!data[year][month][day]) {
+        data[year][month][day] = {};
+    }
+
+    data[year][month][day][time] = {
+        title: title
+    };
+
+
     if (start === "" || end === "" || title === "") {
         alert("入力されていない項目があります．");
         return;
     }
 
-    const key = `schedule-${selectedYear}-${selectedMonth + 1}-${selectedDay}`;
-
-    const data = {
-        startTime: start,
-        endTime: end,
-        title: title
-    };
-
-    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem("schedule", JSON.stringify(data));
     modal.style.display = "none";
 });
 
@@ -178,7 +197,7 @@ modalHeader.addEventListener("mousedown", function(event) {
     offsetY = event.clientY - rect.top;
 });
 
-document.addEventListener("mousedown", function(event) {
+document.addEventListener("mousemove", function(event) {
     if (!isDragging) {
         return;
     }
@@ -210,6 +229,11 @@ document.addEventListener("mousedown", function(event) {
     modal.style.left = `${x}px`;
     modal.style.top = `${y}px`;
 });
+
+document.addEventListener("mouseup", function() {
+    isDragging = false;
+});
+
 
 function renderIcons() {
     const appMenu = document.querySelector('.app-menu');

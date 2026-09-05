@@ -14,14 +14,7 @@
     <body>
         <!-- application移動-->
         <section class="app-menu">
-            <button class="app-icon">📅</button>
-            <button class="app-icon">📋</button>
-            <button class="app-icon">🔍</button>
-            <button class="app-icon">✓</button>
-            <button class="app-icon">📝</button>
-            <button class="app-icon">📊</button>
-            <button class="app-icon">⚙️</button>
-            <a href="https://www.youtube.com/" class="app-icon">Y</a>
+            <button class="app-icon app-add"><div></div></button>
         </section>
 
         <!--メイン部分-->
@@ -95,5 +88,28 @@
         </div>
         <script src="../js/dashboard.js"></script>
         </main>
+        <div class="app-icon-popup">
+            <label>名前</label>
+            <input type="text" class="app-icon-name">
+            <label>リンク</label>
+            <input type="text" class="app-icon-link">
+            <hr>
+            <label>またはアプリを追加...</label>
+            <input type="text" list="prefs" class="app-icon-app">
+            <datalist id="prefs">
+                <option value="discord://">Discord</option>
+                <option value="msteams://">Microsoft Teams</option>
+                <option value="zoommtg://">Zoom</option>
+                <option value="line://">LINE</option>
+                <option value="vscode://">Visual Studio Code</option>
+                <option value="notion://">Notion</option>
+                <option value="x-github-client://">GitHub Desktop</option>
+                <option value="spotify://">Spotify</option>
+            </datalist>
+            <button class="app-icon-submit">追加</button>
+        </div>
+        <div class="app-icon-context">
+            <button class="app-icon-delete">削除</button>
+        </div>
     </body>
 </html>

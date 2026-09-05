@@ -9,6 +9,7 @@
     --mute-text-color: #808080;
     --text-color-disabled: #a7a7a7;
     --calender-background-color: #ffffff;
+    --calender-background-color-hover: #cac8c8;
     --calender-appicon-color: #ffffff;
     --common-background-before: #fbecff;
     --common-background-after: #e6f7ff;
@@ -27,6 +28,7 @@
     --mute-text-color: #707070;
     --text-color-disabled: #5a5a5a;
     --calender-background-color: #222222;
+    --calender-background-color-hover: #cac8c8;
     --calender-appicon-color: #222222;
     --common-background-before: #272627;
     --common-background-after: #303131;

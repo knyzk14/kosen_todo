@@ -48,6 +48,123 @@ main {
     transform: scale(1.1);
 }
 
+.app-icon img {
+    width: 30px;
+    height: 30px;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+.app-icon-popup {
+    position: fixed;
+    display: none;
+    opacity: 0;
+    border: 3px solid var(--text-color);
+    border-radius: 10px;
+    top: 50%;
+    left: 50%;
+    z-index: 999;
+    width: 250px;
+    height: 300px;
+    background-color: var(--background-color);
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.app-icon-popup.is-active {
+    display: block;
+    opacity: 1;
+}
+
+.app-icon-popup > input {
+    display: block;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    width: 206px;
+    height: 25px;
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    background-color: var(--calender-appicon-color);
+    font-family: "Noto Sans JP", sans-serif;
+    padding-left: 10px;
+}
+
+.app-icon-popup > input:focus {
+    outline: none;
+    border: 2px solid var(--sub-text-color);
+}
+
+.app-icon-popup > button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin: 10px;
+    width: 100px;
+    height: 40px;
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    background-color: var(--calender-appicon-color);
+    font-size: 15px;
+    transition: background-color 0.2s ease;
+}
+
+.app-icon-popup > button:hover {
+    background-color: var(--calender-appicon-color-hover);
+}
+
+.app-add {
+    background-color: var(--background-color-disabled);
+}
+
+.app-add > div {
+    -webkit-mask-image: url(/res/img/plus.svg);
+    mask-image: url(/res/img/plus.svg);
+
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    background-color: var(--sub-text-color);
+    width: 30px;
+    height: 30px;
+}
+
+.app-icon-context {
+    position: fixed;
+    display: none;
+    width: 100px;
+    border: 1px solid var(--mute-text-color);
+    border-radius: 10px;
+    z-index: 999;
+    background-color: var(--calender-appicon-color);
+    padding: 5px;
+    text-align: center;
+    padding: 0;
+}
+
+.app-icon-context.is-active {
+    display: block;
+}
+
+.app-icon-delete {
+    width: 100px;
+    height: 40px;
+    background-color: transparent;
+    border-radius: 5px;
+    outline: none;
+    border: none;
+    margin: auto;
+    color: red;
+    font-size: 15px;
+    transition: background-color 0.2s ease;
+}
+
+.app-icon-delete:hover {
+    background-color: var(--text-color-disabled);
+}
+
 /* ==============================
     Commands Button Layout
    ============================== */

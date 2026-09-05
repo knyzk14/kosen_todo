@@ -57,7 +57,7 @@ main {
 
 .app-icon-popup {
     position: fixed;
-    display: none;
+    visibility: hidden;
     opacity: 0;
     border: 3px solid var(--text-color);
     border-radius: 10px;
@@ -69,11 +69,12 @@ main {
     background-color: var(--background-color);
     padding: 10px;
     box-sizing: border-box;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .app-icon-popup.is-active {
-    display: block;
     opacity: 1;
+    visibility: visible;
 }
 
 .app-icon-popup > input {
@@ -133,7 +134,7 @@ main {
 
 .app-icon-context {
     position: fixed;
-    display: none;
+    visibility: hidden;
     width: 100px;
     border: 1px solid var(--mute-text-color);
     border-radius: 10px;
@@ -142,10 +143,13 @@ main {
     padding: 5px;
     text-align: center;
     padding: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .app-icon-context.is-active {
-    display: block;
+    visibility: visible;
+    opacity: 1;
 }
 
 .app-icon-delete {

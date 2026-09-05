@@ -132,11 +132,9 @@ days.addEventListener("click", function(event) {
     //     startTime.value = data.startTime;
     //     endTime.value = data.endTime;
     //     scheduleTitle.value = data.title; 
-    // } else {
-    //     startTime.value = "";
-    //     endTime.value = "";
-    //     scheduleTitle.value = "";
-    // }
+        startTime.value = "";
+        endTime.value = "";
+        scheduleTitle.value = "";
 
     const rect = event.target.getBoundingClientRect();
 

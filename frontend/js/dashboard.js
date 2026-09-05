@@ -64,9 +64,13 @@ function createCalendar(year, month) {
 
     for (let i = 1; i <= lastDay.getDate(); i++) {
         const day = document.createElement("div");
-        day.textContent = i;
+        const p = document.createElement("p");
+        const hr = document.createElement("hr");
         day.classList.add("day");
         day.dataset.day = i;
+        p.textContent = i;
+        day.appendChild(p);
+        day.appendChild(hr);
         days.appendChild(day);
     }
 }

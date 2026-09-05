@@ -16,6 +16,8 @@ let selectedMonth = null;
 
 let data={};
 
+let scheduleOpen = false;
+
 const startTime = document.querySelector("#start-time");
 const endTime = document.querySelector("#end-time");
 const scheduleTitle = document.querySelector("#schedule-title");
@@ -113,6 +115,7 @@ prev.addEventListener("click", function() {
 });
 
 days.addEventListener("click", function(event) {
+
     if (!event.target.classList.contains("day")) {
         return;
     }
@@ -121,6 +124,10 @@ days.addEventListener("click", function(event) {
     selectedDay = clickedDay;
     selectedMonth = currentMonth;
     selectedYear = currentYear;
+
+    if (scheduleOpen) {
+        return;
+    }
 
     showDay.textContent =  `${selectedMonth + 1}月${selectedDay}日のカレンダーの入力`;
 
@@ -142,9 +149,14 @@ days.addEventListener("click", function(event) {
     modal.style.position = "fixed";
     modal.style.left = rect.left + 30 + "px";
     modal.style.top = rect.bottom + 30 + "px";
+
+    scheduleOpen = true;
 });
 
 schedule_ok.addEventListener("click", function() {
+
+    scheduleOpen = false;
+
     const start = startTime.value;
     const end = endTime.value;
     const title = scheduleTitle.value;
@@ -182,6 +194,7 @@ schedule_ok.addEventListener("click", function() {
 
 scheduleCancel.addEventListener("click", function() {
     modal.style.display = "none";
+    scheduleOpen = false;
 });
 
 let isDragging = false;

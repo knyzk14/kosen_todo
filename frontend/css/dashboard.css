@@ -363,3 +363,11 @@ sidebar {
     font-size:16px
 
 }
+
+#plan-li, #task-li{
+    display:flex;
+    align-items: center;
+    gap:10px;
+
+    font-size: 16px;
+}

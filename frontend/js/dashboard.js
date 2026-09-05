@@ -10,6 +10,11 @@ const modalHeader = document.querySelector("#modal-header");
 const modalContent = document.querySelector(".modal-content");
 const showDay = document.querySelector("#showDay");
 
+const planCount = document.querySelector("#plan");
+const taskCount = document.querySelector("#task");
+const planRadio = document.querySelector("#radio-plan");
+const taskRadio = document.querySelector("#radio-task");
+
 let selectedDay = null;
 let selectedYear = null;
 let selectedMonth = null;
@@ -126,6 +131,7 @@ days.addEventListener("click", function(event) {
     selectedYear = currentYear;
 
     if (scheduleOpen) {
+        alert("スケジュールを入力中です。キャンセルするか入力をクリックしてください。");
         return;
     }
 
@@ -186,6 +192,14 @@ schedule_ok.addEventListener("click", function() {
     if (start === "" || end === "" || title === "") {
         alert("入力されていない項目があります．");
         return;
+    }
+    else{
+        if(planRadio.checked){
+        planCount.textContent = `${parseInt(planCount.textContent) + 1}`;
+        }
+        if(taskRadio.checked){
+            taskCount.textContent = `${parseInt(taskCount.textContent) + 1}`;
+        }
     }
 
     localStorage.setItem("schedule", JSON.stringify(data));

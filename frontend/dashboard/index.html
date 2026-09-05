@@ -44,8 +44,14 @@
                     <div class="overview">
                         <hr>
                         <ul>
-                            <li>予定: 0</li>
-                            <li>タスク: 0</li>
+                            <li id="plan-li">
+                                予定:
+                                <div id="plan"> 0</div>
+                            </li>
+                            <li id="task-li">
+                                タスク:
+                                <div id="task"> 0</div>
+                            </li>
                         </ul>
                         <hr>
                     </div>
@@ -86,6 +92,9 @@
                         <input type="time" id="end-time">
                     </div>
                     <textarea id="schedule-title" placeholder="タイトルを入力..."></textarea>
+                    <label><input type = "radio" name = "schedule-type"  value="task" id="radio-task">タスク</label>
+                    <label><input type = "radio" name = "schedule-type"  value="plan" id="radio-plan">予定</label>
+
                     <div class="modal-buttons">
                         <button id="schedule-ok">入力</button>
                         <button id="schedule-cancel">キャンセル</button>

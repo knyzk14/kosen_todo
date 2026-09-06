@@ -1,0 +1,91 @@
+sidebar {
+    position: relative;
+    container-type: inline-size;
+    container-name: sidebar;
+    flex: 2;
+    min-width: 0;
+    margin: 20px;
+    margin-left: 40px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: var(--rightbar-background-color);
+    box-sizing: border-box;
+}
+
+.profile {
+    position: absolute;
+    display: flex;
+    width: 250px;
+    padding: 15px;
+    bottom: 15px;
+    left: 15px;
+    gap: 15px;
+    border: 1px solid var(--mute-text-color);
+    border-radius: 10px;
+    background-color: var(--user-profile-background-color);
+    box-shadow: 0 4px 4px rgba(0,0,0,0.15);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    justify-content: center;
+}
+
+#user-icon {
+    width: 46px;
+    height: auto;
+    border-radius: 50%;
+}
+
+#user-name {
+    font-weight: bold;
+    font-size: large;
+}
+
+#user-email {
+    font-size: small;
+}
+
+.tab-control {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    height: 30px;
+    padding: 10px;
+}
+
+sidebar hr {
+    outline: none;
+    border: 1px solid var(--mute-text-color);
+}
+
+.tab {
+    border: none;
+    outline: none;
+    max-width: 150px;
+    height: 30px;
+    background-color: transparent;
+    font-size: large;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.tab-background {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 0;
+    z-index: 1;
+    background-color: var(--background-color);
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@container sidebar (max-width: 280px) {
+    .profile {
+        display: none;
+    }
+}

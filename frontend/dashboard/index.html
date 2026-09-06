@@ -11,12 +11,17 @@
     <meta property="og:site_name" content="Kosen Todo" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="stylesheet" href="../css/colors.css">
-    <link rel="stylesheet" href="../css/common.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="../css/calender.css">
+    <link rel="stylesheet" href="/css/colors.css" />
+    <link rel="stylesheet" href="/css/common.css" />
+    <link rel="stylesheet" href="/css/dashboard.css" />
+    <link rel="stylesheet" href="/css/calender.css" />
+    <link rel="stylesheet" href="/css/sidebar.css" />
+    <link rel="stylesheet" href="/css/auth-guard.css" />
     <title>Kosen todo</title>
     <script src="/js/preload.js" defer></script>
+    <script src="/js/user-info.js" type="module" defer></script>
+    <script src="/js/auth-guard.js" type="module"></script>
+    <script src="/js/sidebar.js"></script>
 </head>
     <body>
         <div class="main-container">
@@ -105,7 +110,22 @@
         <script src="../js/dashboard.js"></script>
         </main>
         </div>
-        <sidebar></sidebar>
+        <sidebar>
+            <div class="tab-control">
+                <div class="tab-background"></div>
+                <button class="tab active">ToDoリスト</button>
+                <button class="tab">空き時間検索</button>
+                <button class="tab">共有カレンダー</button>
+            </div>
+            <hr>
+            <div class="profile">
+                <img id="user-icon" src="/res/img/default-icon.png" alt="User Icon" />
+                <div class="user-info">
+                    <div id="user-name">読み込み中...</div>
+                    <div id="user-email"></div>
+                </div>
+            </div>
+        </sidebar>
         <div class="app-icon-popup">
             <label>名前</label>
             <input type="text" class="app-icon-name">

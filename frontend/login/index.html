@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <meta property="og:title" content="Kosen Todo / Login" />
+        <meta property="og:description" content="高専生のためのタスク管理アプリ" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://todo.kyonshi.com/" />
+        <meta property="og:image" content="https://todo.kyonshi.com/res/img/banner.png" />
+        <meta property="og:site_name" content="Kosen Todo" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+
+        <title>Kosen Todo</title>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New&display=swap" rel="stylesheet">
+
+
+        <link rel="stylesheet" href="/css/colors.css" />
+        <link rel="stylesheet" href="/css/common.css" />
+        <link rel="stylesheet" href="/css/login.css" />
+        <link rel="stylesheet" href="/css/auth-guard.css" />
+
+        <script src="/js/preload.js" defer></script>
+        <script src="/js/auth-guard.js" type="module"></script>
+        <script src="/js/login.js" type="module"></script>
+    </head>
+    <body>
+        <div class="login-form">
+            <h1>Kosen Todo</h1>
+            <p class="login-text">Login / Sign up</p>
+            <button id="login-btn" class="login-button"><img class="google-logo" src="/res/img/icons/GoogleG_FullColor_RGB.png" /><p>Googleでログイン</p></button>
+        </div>
+    </body>
+</html>

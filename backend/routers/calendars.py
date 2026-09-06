@@ -115,6 +115,12 @@ def update_calendar(
         calendar.title = calendar_data.title
 
     if calendar_data.member_usernames is not None:
+        if calendar.is_default:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="デフォルトカレンダーは共有できません"
+            )
+
         unique_usernames = list(set(calendar_data.member_usernames))
         users = []
         for username in unique_usernames:

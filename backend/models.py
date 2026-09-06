@@ -67,6 +67,7 @@ class Calendar(Base):
     tags: Mapped[List["Tag"]] = relationship(
         "Tag", back_populates="calendar", cascade="all, delete-orphan"
     )
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 
 class Event(Base):
@@ -101,6 +102,8 @@ class Todo(Base):
         "Tag", secondary=todo_tags, back_populates="todos"
     )
 
+    source: Mapped[str] = mapped_column(String(50), default="local", nullable=False)
+    external_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
 class Tag(Base):
     __tablename__ = "tags"

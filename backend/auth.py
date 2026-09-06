@@ -58,6 +58,14 @@ def get_current_user(
     if not user:
         user = models.User(id=uid, email=email or "no-email@example.com")
         db.add(user)
+        db.flush()
+
+        default_calendar = models.Calendar(
+            title="マイカレンダー",
+            owner_id=user.id,
+            is_default=True
+        )
+        db.add(default_calendar)
         db.commit()
         db.refresh(user)
 

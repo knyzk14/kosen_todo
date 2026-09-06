@@ -14,6 +14,8 @@
     --calender-appicon-color: #ffffff;
     --common-background-before: #fbecff;
     --common-background-after: #e6f7ff;
+    --user-profile-background-color: #dfdede;
+    --login-form-color: #ecebe3;
 
     --dark-bg-opacity: 0;
 }
@@ -24,6 +26,7 @@
     --background-color-disabled: #252525;
     --border-color: #6b6b6b;
     --sidebar-background-color: #202020;
+    --rightbar-background-color: #1e1f1f;
     --text-color: #e0e0e0;
     --sub-text-color: #a0a0a0;
     --mute-text-color: #707070;
@@ -33,6 +36,8 @@
     --calender-appicon-color: #222222;
     --common-background-before: #272627;
     --common-background-after: #303131;
+    --user-profile-background-color: #3b3b3b;
+    --login-form-color: #2e2e2d;
 
     --dark-bg-opacity: 1;
 }

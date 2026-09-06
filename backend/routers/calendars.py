@@ -31,6 +31,7 @@ class CalendarResponse(BaseModel):
     id: uuid.UUID
     title: str
     owner_username: str
+    is_default: bool
     members: List[str] = []
     event_count: int = 0
     todo_count: int = 0
@@ -88,6 +89,7 @@ def get_calendars(
             "id": cal.id,
             "title": cal.title,
             "owner_username": owner_username,
+            "is_default": cal.is_default,
             "members": members,
             "event_count": len(cal.events),
             "todo_count": len(cal.todos)

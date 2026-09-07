@@ -18,13 +18,16 @@ const provider = new GoogleAuthProvider();
 const originalFetch = window.fetch;
 
 window.fetch = async (input, init = {}) => {
-    const url = typeof input === "string" ? input : (input instanceof Request ? input.url : input.toString());
-    const isPing = url.includes("/api/ping");
+    const urlStr = typeof input === "string" ? input : (input instanceof Request ? input.url : input.toString());
+    const urlObj = new URL(urlStr, window.location.origin);
+    const isApiPath = urlObj.pathname.startsWith("/api/");
+    const isPing = urlObj.pathname === "/api/ping";
+    const isTargetDomain = urlObj.hostname === "todo.kyonshi.com" || urlObj.hostname === window.location.hostname;
+
     const user = auth.currentUser;
 
-    if (user && !isPing) {
+    if (user && isApiPath && !isPing && isTargetDomain) {
         const token = await user.getIdToken(false);
-        
 
         init.headers = {
             ...init.headers,

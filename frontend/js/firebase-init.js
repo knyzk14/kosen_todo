@@ -3,7 +3,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from
 
 const firebaseConfig = {
     apiKey: "AIzaSyBPAeA6kT6vwgcFevlQB5QUK8rYMn5AJCc",
-    authDomain: "kosentodo.firebaseapp.com",
+    authDomain: "todo.kyonshi.com",
     projectId: "kosentodo",
     storageBucket: "kosentodo.firebasestorage.app",
     messagingSenderId: "862685638101",

@@ -19,7 +19,29 @@ let selectedDay = null;
 let selectedYear = null;
 let selectedMonth = null;
 
+// localStorageからデータを引っ張ってきているコード
 let data={};
+
+// const savedSchedule = localStorage.getItem("schedule");
+// if(savedSchedule){
+//     try{
+//         data=JSON.parse(savedSchedule);
+//     }catch(e){
+//         console.error("スケジュールデータの読み込みに失敗しました.",e);
+//         data={};
+//     }
+// }
+
+// const dayViewModal = document.querySelector("#day-view-modal");
+// const dayViewTitle = document.querySelector("#day-view-title");
+// const dayViewHours = document.querySelector("#day-view-hours");
+// const dayViewEvents = document.querySelector("#day-view-events");
+// const dayViewBody = document.querySelector(".day-view-body");
+// const dayViewAdd = document.querySelector("#day-view-add");
+// const dayViewClose = document.querySelector("#day-view-close");
+
+// let selectedDayElement = null; // クリックした日付要素(入力ポップアップの位置決めに使用)
+// const HOUR_HEIGHT = 60; 
 
 let scheduleOpen = false;
 
@@ -46,6 +68,8 @@ const appDictionary = {
     "spotify://": { name: "Spotify", icon: "/res/img/icons/spotify.svg" },
     "music://": { name: "Apple Music", icon: "/res/img/icons/music.svg" }
 };
+
+
 
 function createCalendar(year, month) {
     const firstDay = new Date(year, month, 1);
@@ -133,13 +157,18 @@ days.addEventListener("click", function(event) {
     selectedDay = clickedDay;
     selectedMonth = currentMonth;
     selectedYear = currentYear;
+    selectedDayElement = event.target
 
     if (scheduleOpen) {
         alert("スケジュールを入力中です。キャンセルするか入力をクリックしてください。");
         return;
     }
+    // まず一日予定表を開くようにする
+    openDayView();
 
-    showDay.textContent =  `${selectedMonth + 1}月${selectedDay}日のカレンダーの入力`;
+    // 以下のコードは一日予定表ができ次第，移動予定
+
+    // showDay.textContent =  `${selectedMonth + 1}月${selectedDay}日のカレンダーの入力`;
 
     // const key = `schedule-${selectedYear}-${selectedMonth+1}-${selectedDay}`;
     // const saved_schedule = localStorage.getItem(key);
@@ -149,18 +178,18 @@ days.addEventListener("click", function(event) {
     //     startTime.value = data.startTime;
     //     endTime.value = data.endTime;
     //     scheduleTitle.value = data.title; 
-        startTime.value = "";
-        endTime.value = "";
-        scheduleTitle.value = "";
+    //     startTime.value = "";
+    //     endTime.value = "";
+    //     scheduleTitle.value = "";
 
-    const rect = event.target.getBoundingClientRect();
+    // const rect = event.target.getBoundingClientRect();
 
-    modal.style.display = "flex";
-    modal.style.position = "fixed";
-    modal.style.left = rect.left + 30 + "px";
-    modal.style.top = rect.bottom + 30 + "px";
+    // modal.style.display = "flex";
+    // modal.style.position = "fixed";
+    // modal.style.left = rect.left + 30 + "px";
+    // modal.style.top = rect.bottom + 30 + "px";
 
-    scheduleOpen = true;
+    // scheduleOpen = true;
 });
 
 schedule_ok.addEventListener("click", function() {
@@ -209,6 +238,34 @@ schedule_ok.addEventListener("click", function() {
     localStorage.setItem("schedule", JSON.stringify(data));
     modal.style.display = "none";
 });
+
+// function openDayView(){
+//     dayViewTitle.textContent = `${selectedMonth + 1}月${selectedDay}日の予定`;
+//     renderDayView();
+//     dayViewModal.style.display="flex"
+// }
+
+// function closeDayView(){
+//     dayViewModal.style.display = "none";
+// }
+
+// function timeToMinutes(timeStr){
+//     const [h,m] = timeStr.split(":").map(Number);
+//     return (h||0)* 60 +(m||0);
+// }
+
+// function renderDayview(){
+//     dayViewHours.innerHTML = "";
+//     dayViewEvents.innerHTML = "";
+
+//     for(let h=0;h<24;h++){
+//         const hourLabel = document.createElement("div");
+//         hourLabel.classList.add("day-view-hour-label");
+//         hourLabel.style.height = HOUR_HEIGHT +"px";
+//         hourLabel.textContent = `${String(h)}:00`;
+//         dayViewHours.appendChild(hourLabel);
+//     }
+// }
 
 scheduleCancel.addEventListener("click", function() {
     modal.style.display = "none";

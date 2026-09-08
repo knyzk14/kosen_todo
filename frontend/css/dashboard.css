@@ -270,7 +270,9 @@ main {
     }
 }
 
-/* スケジュールの入力欄 */
+/* ==============================
+    schedule-pop-up
+   ============================== */
 .modal{
     display: none;
     position: fixed;
@@ -367,3 +369,155 @@ main {
 
     font-size: 16px;
 }
+
+/* ==============================
+    Day View 
+   ============================== */
+#day-view-modal {
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.day-view-content {
+    display: flex;
+    flex-direction: column;
+
+    width: 380px;
+    max-width: 90vw;
+    max-height: 80vh;
+
+    background: white;
+    border: 2px solid #333;
+    border-radius: 8px;
+
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.day-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 15px;
+
+    background: #eee;
+    border-bottom: 1px solid #ccc;
+}
+
+#day-view-title {
+    margin: 0;
+    font-size: 16px;
+}
+
+.day-view-header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#day-view-add {
+    background: #fdfdfd;
+    border: none;
+    border-bottom: 1px solid black;
+    padding: 5px 10px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+#day-view-add:hover{
+    color:#4a90e2
+}
+
+#day-view-close {
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+#day-view-close:hover {
+    color: #c00;
+}
+
+.day-view-body {
+    flex: 1;
+    display: flex;
+
+    overflow-y: auto;
+    position: relative;
+}
+
+.day-view-hours {
+    flex-shrink: 0;
+    width: 55px;
+
+    box-sizing: border-box;
+    border-right: 1px solid #e0e0e0;
+}
+
+.day-view-hour-label {
+    box-sizing: border-box;
+    padding-right: 8px;
+    padding-top: 2px;
+
+    text-align: right;
+    font-size: 11px;
+    color: #888;
+
+    border-top: 1px solid #eee;
+}
+
+.day-view-hour-label:first-child {
+    border-top: none;
+}
+
+.day-view-events {
+    position: relative;
+    flex: 1;
+}
+
+.day-view-hour-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #eee;
+}
+
+.day-view-event {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+
+    box-sizing: border-box;
+    min-height: 18px;
+    padding: 2px 6px;
+
+    background-color: #cfe4ff;
+    border-left: 3px solid #4a90e2;
+    border-radius: 4px;
+
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.day-view-event-time {
+    font-size: 10px;
+    color: #2c5c99;
+}
+
+.day-view-event-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1c1c1c;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+} 

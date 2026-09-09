@@ -9,6 +9,9 @@ const modal = document.querySelector("#schedule-modal");
 const modalHeader = document.querySelector("#modal-header");
 const modalContent = document.querySelector(".modal-content");
 const showDay = document.querySelector("#showDay");
+const modalButtons =document.querySelector(".modal-buttons");
+
+let editingKey = null;
 
 const planCount = document.querySelector("#plan");
 const taskCount = document.querySelector("#task");
@@ -19,7 +22,7 @@ let selectedDay = null;
 let selectedYear = null;
 let selectedMonth = null;
 
-// localStorageからデータを引っ張ってきているコード
+
 let data={};
 
 const savedSchedule = localStorage.getItem("schedule");
@@ -97,6 +100,7 @@ function createCalendar(year, month) {
         day.appendChild(hr);
         days.appendChild(day);
     }
+    updateMonthlyCounts(year,month);
 }
 
 let currentYear = today.getFullYear();
@@ -147,7 +151,33 @@ prev.addEventListener("click", function() {
     }, 200);
 });
 
+function updateMonthlyCounts(year = currentYear,month = currentMonth){
+    let planTotal = 0;
+    let taskTotal = 0;
+
+    const monthData = data?.[year]?.[month + 1];
+
+    if(monthData){
+        Object.values(monthData).forEach(daySchedule=>{
+            Object.values(daySchedule).forEach(entry=>{
+                if(entry.type==="task"){
+                    taskTotal++;
+                }
+                else{
+                    planTotal++;//typeがない古いデータは削除してあるが，予定扱いにしておく．
+                }
+            
+            });
+        });
+        planCount.textContent =  ` ${planTotal}`;
+        taskCount.textContent =  ` ${taskTotal}`;
+    }
+}
+
 days.addEventListener("click", function(event) {
+
+    planRadio.checked = false;
+    taskRadio.checked = false;
 
     if (!event.target.classList.contains("day")) {
         return;
@@ -169,11 +199,21 @@ days.addEventListener("click", function(event) {
 
 schedule_ok.addEventListener("click", function() {
 
-    scheduleOpen = false;
-
     const start = startTime.value;
     const end = endTime.value;
     const title = scheduleTitle.value;
+    const type = taskRadio.checked ? "task" :(planRadio.checked ? "plan" :null);
+
+    if(start==="" || end===""||title ===""||!type){
+        alert("入力されていない項目があります．");
+        return;
+    }
+    if(start>end){
+        alert("終了時刻より開始時刻のほうが遅いため，入力できません．")
+        return;
+    }
+
+    scheduleOpen = false;
 
     const year = selectedYear;
     const month = selectedMonth + 1;
@@ -192,27 +232,54 @@ schedule_ok.addEventListener("click", function() {
         data[year][month][day] = {};
     }
 
+    if(editingKey && editingKey !== time && data[year][month][day][editingKey]){
+        delete data[year][month][day][editingKey];
+    }
+
     data[year][month][day][time] = {
-        title: title
+        title: title,
+        type:type
     };
 
+    localStorage.setItem("schedule",JSON.stringify(data));
 
-    if (start === "" || end === "" || title === "") {
-        alert("入力されていない項目があります．");
-        return;
-    }
-    else{
-        if(planRadio.checked){
-        planCount.textContent = `${parseInt(planCount.textContent) + 1}`;
-        }
-        if(taskRadio.checked){
-            taskCount.textContent = `${parseInt(taskCount.textContent) + 1}`;
-        }
-    }
+    updateMonthlyCounts();
 
-    localStorage.setItem("schedule", JSON.stringify(data));
+    editingKey = null;
+    removeDeleteButton();
     modal.style.display = "none";
 });
+
+function handleDeleteSchedule(){
+    if(!editingKey){
+        return;
+    }
+    const year = selectedYear;
+    const month = selectedMonth + 1;
+    const day = selectedDay;
+
+    if (data?.[year]?.[month]?.[day]?.[editingKey]) {
+        delete data[year][month][day][editingKey];
+
+        if (Object.keys(data[year][month][day]).length === 0) {
+            delete data[year][month][day];
+        }
+        if (Object.keys(data[year][month]).length === 0) {
+            delete data[year][month];
+        }
+        if (Object.keys(data[year]).length === 0) {
+            delete data[year];
+        }
+
+        localStorage.setItem("schedule", JSON.stringify(data));
+        updateMonthlyCounts();
+    }
+
+    editingKey = null;
+    removeDeleteButton();
+    modal.style.display = "none";
+    scheduleOpen = false;
+}
 
 function openDayView(){
     dayViewTitle.textContent = `${selectedMonth + 1}月${selectedDay}日の予定`;
@@ -259,13 +326,12 @@ function renderDayview(){
             if (end <= start) {
                 end = start + 30; // 最低の高さを確保
             }
-            return { startStr, endStr, start, end, title: info.title };
+            return {time, startStr, endStr, start, end, title: info.title,type:info.type||"plan" };
         });
 
         // 開始時刻順にソート
         entries.sort((a, b) => a.start - b.start);
 
-        // ▼追加: 重なりグループを計算して column(何番目) と columnCount(何個中) を割り当てる
         assignOverlapColumns(entries);
 
         entries.forEach((entry) => {
@@ -277,7 +343,6 @@ function renderDayview(){
             eventEl.style.top = top + "px";
             eventEl.style.height = height + "px";
 
-            // ▼追加: 重なり数に応じて幅と横位置を計算
             const widthPercent = 100 / entry.columnCount;
             eventEl.style.width = `calc(${widthPercent}% - 4px)`;
             eventEl.style.left = `calc(${widthPercent * entry.column}% + 2px)`;//予定同士がぴったりくっつかないよう2pxのマージンを追加
@@ -293,7 +358,20 @@ function renderDayview(){
             eventEl.appendChild(timeEl);
             eventEl.appendChild(titleEl);
             dayViewEvents.appendChild(eventEl);
+
+            eventEl.addEventListener("click",function(){
+                const rect = selectedDayElement ? selectedDayElement.getBoundingClientRect() : null;
+
+                openScheduleModal(rect,{
+                    time: entry.time,
+                    startStr: entry.startStr,
+                    endStr: entry.endStr,
+                    title: entry.title,
+                    type: entry.type
+                });
+            });
         });
+
     }
 
 // entries(ソート済み)に対して、重なっているグループごとに
@@ -310,7 +388,6 @@ function assignOverlapColumns(entries) {
             groupEnd = Math.max(groupEnd, entries[j].end);
             j++;
         }
-
         // group は entries[i .. j-1]
         const group = entries.slice(i, j);//sliceはi以上j未満の要素を取り出す．
         const columnCount = group.length;
@@ -347,8 +424,29 @@ function assignOverlapColumns(entries) {
         }
     });
 
+//one-day-view表示の時のみポップアップに削除を表示させる
 
-function openScheduleModal(rect) {
+function addDeleteButton(){
+    removeDeleteButton(); //念のため既存の削除ボタンが存在した場合，削除する．
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.id = "schedule-delete";
+    deleteBtn.textContent = "削除";
+    deleteBtn.classList.add("schedule-delete-button");
+
+    deleteBtn.addEventListener("click",handleDeleteSchedule);
+
+    modalButtons.appendChild(deleteBtn);
+}
+
+function removeDeleteButton(){
+    const exsiting = document.querySelector("#schedule-delete");
+    if(exsiting){
+        exsiting.remove();
+    }
+}
+
+function openScheduleModal(rect,existingEntry = null) {
     if (scheduleOpen) {
         alert("スケジュールを入力中です。キャンセルするか入力をクリックしてください。");
         return;
@@ -356,9 +454,32 @@ function openScheduleModal(rect) {
 
     showDay.textContent = `${selectedMonth + 1}月${selectedDay}日のカレンダーの入力`;
 
-    startTime.value = "";
-    endTime.value = "";
-    scheduleTitle.value = "";
+
+//以下one-day-view用の予定の詳細の確認を行うためのポップアップ呼び出し.
+    if(existingEntry){
+        startTime.value = existingEntry.startStr;
+        endTime.value = existingEntry.endStr;
+        scheduleTitle.value = existingEntry.title;
+
+        if(existingEntry.type==="task"){
+            taskRadio.checked = true;
+        }else{
+            planRadio.checked = true;
+        }
+
+        editingKey = existingEntry.time;
+        addDeleteButton();
+    }
+    else{
+        startTime.value = "";
+        endTime.value = "";
+        scheduleTitle.value = "";
+        planRadio.checked = false;
+        taskRadio.checked = false;
+
+        editingKey = null;
+        removeDeleteButton();
+    }
 
     modal.style.display = "flex";
     modal.style.position = "fixed";
@@ -377,6 +498,8 @@ function openScheduleModal(rect) {
 scheduleCancel.addEventListener("click", function() {
     modal.style.display = "none";
     scheduleOpen = false;
+    editingKey = null;
+    removeDeleteButton();
 });
 
 let isDragging = false;

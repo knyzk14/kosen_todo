@@ -534,3 +534,29 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
 } 
+
+.schedule-delete-button {
+    background: #fff5f5;
+    color: #c00;
+    border: none;
+    border-bottom: 1px solid #c00;
+    padding: 5px 15px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.schedule-delete-button:hover {
+    background: #ffe9e9;
+}
+
+.day-view-event {
+    cursor: pointer;
+}
+
+#schedule-ok:hover{
+    background: #b5d3fa;
+}
+
+#schedule-cancel:hover{
+    background: cornsilk;
+}

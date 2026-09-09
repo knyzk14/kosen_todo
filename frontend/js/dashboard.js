@@ -410,6 +410,8 @@ function assignOverlapColumns(entries) {
     dayViewModal.addEventListener("click", function(event) {
         if (event.target === dayViewModal) {
             closeDayView();
+            modal.style.display="none";
+            scheduleOpen = false;
         }
     });
 

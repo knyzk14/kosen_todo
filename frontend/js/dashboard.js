@@ -73,7 +73,28 @@ const appDictionary = {
 };
 
 
+function updateMonthlyCounts(year = currentYear,month = currentMonth){
+    let planTotal = 0;
+    let taskTotal = 0;
 
+    const monthData = data?.[year]?.[month + 1];
+
+    if(monthData){
+        Object.values(monthData).forEach(daySchedule=>{
+            Object.values(daySchedule).forEach(entry=>{
+                if(entry.type==="task"){
+                    taskTotal++;
+                }
+                else{
+                    planTotal++;//typeがない古いデータは削除してあるが，予定扱いにしておく．
+                }
+            
+            });
+        });
+    }
+    planCount.textContent =  ` ${planTotal}`;
+    taskCount.textContent =  ` ${taskTotal}`;
+}
 function createCalendar(year, month) {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
@@ -151,28 +172,7 @@ prev.addEventListener("click", function() {
     }, 200);
 });
 
-function updateMonthlyCounts(year = currentYear,month = currentMonth){
-    let planTotal = 0;
-    let taskTotal = 0;
 
-    const monthData = data?.[year]?.[month + 1];
-
-    if(monthData){
-        Object.values(monthData).forEach(daySchedule=>{
-            Object.values(daySchedule).forEach(entry=>{
-                if(entry.type==="task"){
-                    taskTotal++;
-                }
-                else{
-                    planTotal++;//typeがない古いデータは削除してあるが，予定扱いにしておく．
-                }
-            
-            });
-        });
-        planCount.textContent =  ` ${planTotal}`;
-        taskCount.textContent =  ` ${taskTotal}`;
-    }
-}
 
 days.addEventListener("click", function(event) {
 

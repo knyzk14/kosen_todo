@@ -252,40 +252,78 @@ function renderDayview(){
     const daySchedule = data?.[selectedYear]?.[selectedMonth + 1]?.[selectedDay]; //オプショナルチェーン.存在しないならエラーにしない．
 
     if (daySchedule) {
-        const entries = Object.entries(daySchedule).sort((a, b) => {
-            return timeToMinutes(a[0].split(" - ")[0]) - timeToMinutes(b[0].split(" - ")[0]);
+        const entries = Object.entries(daySchedule).map(([time, info]) => {
+            const [startStr, endStr] = time.split(" - ");
+            let start = timeToMinutes(startStr);
+            let end = timeToMinutes(endStr);
+            if (end <= start) {
+                end = start + 30; // 最低の高さを確保
+            }
+            return { startStr, endStr, start, end, title: info.title };
         });
 
-        entries.forEach(([time, info]) => {
-            const [startStr, endStr] = time.split(" - ");
-            const startMinutes = timeToMinutes(startStr);
-            let endMinutes = timeToMinutes(endStr);
+        // 開始時刻順にソート
+        entries.sort((a, b) => a.start - b.start);
 
-            if (endMinutes <= startMinutes) {
-                endMinutes = startMinutes + 30; // 最低の高さを確保
-            }
+        // ▼追加: 重なりグループを計算して column(何番目) と columnCount(何個中) を割り当てる
+        assignOverlapColumns(entries);
 
-            const top = (startMinutes / 60) * HOUR_HEIGHT;
-            const height = Math.max(((endMinutes - startMinutes) / 60) * HOUR_HEIGHT, 18);
+        entries.forEach((entry) => {
+            const top = (entry.start / 60) * HOUR_HEIGHT;
+            const height = Math.max(((entry.end - entry.start) / 60) * HOUR_HEIGHT, 18);
 
             const eventEl = document.createElement("div");
             eventEl.classList.add("day-view-event");
             eventEl.style.top = top + "px";
             eventEl.style.height = height + "px";
 
+            // ▼追加: 重なり数に応じて幅と横位置を計算
+            const widthPercent = 100 / entry.columnCount;
+            eventEl.style.width = `calc(${widthPercent}% - 4px)`;
+            eventEl.style.left = `calc(${widthPercent * entry.column}% + 2px)`;//予定同士がぴったりくっつかないよう2pxのマージンを追加
+
             const timeEl = document.createElement("span");
             timeEl.classList.add("day-view-event-time");
-            timeEl.textContent = `${startStr} - ${endStr}`;
+            timeEl.textContent = `${entry.startStr} - ${entry.endStr}`;
 
             const titleEl = document.createElement("span");
             titleEl.classList.add("day-view-event-title");
-            titleEl.textContent = info.title;
+            titleEl.textContent = entry.title;
 
             eventEl.appendChild(timeEl);
             eventEl.appendChild(titleEl);
             dayViewEvents.appendChild(eventEl);
         });
     }
+
+// entries(ソート済み)に対して、重なっているグループごとに
+// column(自分が何番目か)と columnCount(グループの合計数)を割り当てる
+function assignOverlapColumns(entries) {
+    let i = 0;
+
+    while (i < entries.length) {
+        // ① iから始まる「連続して重なっているグループ」の終端 j を探す
+        let groupEnd = entries[i].end;
+        let j = i + 1;
+
+        while (j < entries.length && entries[j].start < groupEnd) {
+            groupEnd = Math.max(groupEnd, entries[j].end);
+            j++;
+        }
+
+        // group は entries[i .. j-1]
+        const group = entries.slice(i, j);//sliceはi以上j未満の要素を取り出す．
+        const columnCount = group.length;
+
+        // ② グループ内の各予定に column(0, 1, 2...)を振る
+        group.forEach((entry, index) => {
+            entry.column = index;
+            entry.columnCount = columnCount;
+        });
+
+        i = j; // 次のグループへ
+    }
+}
 
     dayViewBody.scrollTop = 7 * HOUR_HEIGHT;
 }

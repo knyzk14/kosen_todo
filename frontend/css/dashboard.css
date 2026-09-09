@@ -476,9 +476,22 @@ main {
     border-top: none;
 }
 
-.day-view-events {
-    position: relative;
-    flex: 1;
+
+.day-view-event {
+    position: absolute;
+
+    box-sizing: border-box;
+    min-height: 18px;
+    padding: 2px 6px;
+
+    background-color: #cfe4ff;
+    border-left: 3px solid #4a90e2;
+    border-radius: 4px;
+
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
 }
 
 .day-view-hour-line {

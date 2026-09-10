@@ -129,6 +129,29 @@ let currentMonth = today.getMonth();
 
 createCalendar(currentYear, currentMonth);
 
+const reopenInfo = sessionStorage.getItem("reopenDayView");
+if(reopenInfo){
+    sessionStorage.removeItem("reopenDayView");
+    
+    try{
+        const info = JSON.parse(reopenInfo);
+
+        currentYear = info.year;
+        currentMonth = info.month;
+        createCalendar(currentYear,currentMonth);
+
+        selectedYear = info.year;
+        selectedMonth = info.month;
+        selectedDay = info.day;
+
+        selectedDayElement = document.querySelector(`.day[data-day="${selectedDay}"]`);
+
+        openDayView();
+    }catch(e){
+        console.error("再表示に失敗しました．",e);
+    }
+}
+
 const prev = document.querySelector("#prev");
 const next = document.querySelector("#next");
 
@@ -242,6 +265,14 @@ schedule_ok.addEventListener("click", function() {
     };
 
     localStorage.setItem("schedule",JSON.stringify(data));
+
+    sessionStorage.setItem("reopenDayView",JSON.stringify({
+        year:year,
+        month:month -1,
+        day:day
+    }));
+
+    location.reload();
 
     updateMonthlyCounts();
 

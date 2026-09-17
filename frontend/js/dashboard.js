@@ -1,3 +1,6 @@
+import { currentCalendarId } from './preload.js';
+import { auth } from './firebase-init.js'; // Firebase初期化ファイルから取得
+
 const today = new Date();
 const days = document.querySelector(".days");
 const month_title = document.querySelector("#month-title");
@@ -12,6 +15,7 @@ const showDay = document.querySelector("#showDay");
 const modalButtons =document.querySelector(".modal-buttons");
 
 let editingKey = null;
+let existingId = null;
 
 const planCount = document.querySelector("#plan");
 const taskCount = document.querySelector("#task");
@@ -22,16 +26,71 @@ let selectedDay = null;
 let selectedYear = null;
 let selectedMonth = null;
 
-
 let data={};
 
-const savedSchedule = localStorage.getItem("schedule");
-if(savedSchedule){
-    try{
-        data=JSON.parse(savedSchedule);
-    }catch(e){
-        console.error("スケジュールデータの読み込みに失敗しました.",e);
-        data={};
+// APIのベースURL設定 (本番と開発環境で切り替え)
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URL = isLocalhost ? 'https://todo.kyonshi.com' : '';
+
+async function loadDataFromAPI() {
+    if (!currentCalendarId) return;
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/calendars/${currentCalendarId}/data`);
+        if (!res.ok) throw new Error("データの取得に失敗しました");
+        const apiData = await res.json();
+        
+        data = {}; // 初期化
+
+        // 予定(Events)のパース
+        apiData.events.forEach(event => {
+            const startDate = new Date(event.start_at);
+            const endDate = new Date(event.end_at);
+            const year = startDate.getFullYear();
+            const month = startDate.getMonth() + 1;
+            const day = startDate.getDate();
+            
+            const startStr = `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+            const endStr = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+            const timeStr = `${startStr} - ${endStr}`;
+
+            if (!data[year]) data[year] = {};
+            if (!data[year][month]) data[year][month] = {};
+            if (!data[year][month][day]) data[year][month][day] = {};
+
+            data[year][month][day][timeStr] = {
+                id: event.id,          // 編集・削除用にUUIDを保持
+                title: event.title,
+                type: "plan"
+            };
+        });
+
+        // タスク(Todos)のパース
+        apiData.todos.forEach(todo => {
+            // ToDoは due_date しかないため、例えば締切時刻の1時間前～締切時刻を枠として表示する
+            const dueDate = new Date(todo.due_date);
+            const year = dueDate.getFullYear();
+            const month = dueDate.getMonth() + 1;
+            const day = dueDate.getDate();
+            
+            // 例: 締切の1時間前を開始時間とする
+            const startDate = new Date(dueDate.getTime() - 60 * 60 * 1000);
+            const startStr = `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+            const endStr = `${String(dueDate.getHours()).padStart(2, '0')}:${String(dueDate.getMinutes()).padStart(2, '0')}`;
+            const timeStr = `${startStr} - ${endStr}`;
+
+            if (!data[year]) data[year] = {};
+            if (!data[year][month]) data[year][month] = {};
+            if (!data[year][month][day]) data[year][month][day] = {};
+
+            data[year][month][day][timeStr] = {
+                id: todo.id,
+                title: todo.title,
+                type: "task"
+            };
+        });
+    } catch (e) {
+        console.error(e);
     }
 }
 
@@ -86,7 +145,7 @@ function updateMonthlyCounts(year = currentYear,month = currentMonth){
                     taskTotal++;
                 }
                 else{
-                    planTotal++;//typeがない古いデータは削除してあるが，予定扱いにしておく．
+                    planTotal++;
                 }
             
             });
@@ -127,30 +186,39 @@ function createCalendar(year, month) {
 let currentYear = today.getFullYear();
 let currentMonth = today.getMonth();
 
-createCalendar(currentYear, currentMonth);
+// 初期化処理
+async function initDashboard() {
+    if (currentCalendarId) {
+        await loadDataFromAPI();
+    }
+    createCalendar(currentYear, currentMonth);
 
-const reopenInfo = sessionStorage.getItem("reopenDayView");
-if(reopenInfo){
-    sessionStorage.removeItem("reopenDayView");
-    
-    try{
-        const info = JSON.parse(reopenInfo);
+    const reopenInfo = sessionStorage.getItem("reopenDayView");
+    if(reopenInfo){
+        sessionStorage.removeItem("reopenDayView");
+        
+        try{
+            const info = JSON.parse(reopenInfo);
 
-        currentYear = info.year;
-        currentMonth = info.month;
-        createCalendar(currentYear,currentMonth);
+            currentYear = info.year;
+            currentMonth = info.month;
+            createCalendar(currentYear,currentMonth);
 
-        selectedYear = info.year;
-        selectedMonth = info.month;
-        selectedDay = info.day;
+            selectedYear = info.year;
+            selectedMonth = info.month;
+            selectedDay = info.day;
 
-        selectedDayElement = document.querySelector(`.day[data-day="${selectedDay}"]`);
+            selectedDayElement = document.querySelector(`.day[data-day="${selectedDay}"]`);
 
-        openDayView();
-    }catch(e){
-        console.error("再表示に失敗しました．",e);
+            openDayView();
+        }catch(e){
+            console.error("再表示に失敗しました．",e);
+        }
     }
 }
+
+initDashboard();
+
 
 const prev = document.querySelector("#prev");
 const next = document.querySelector("#next");
@@ -220,7 +288,7 @@ days.addEventListener("click", function(event) {
     openDayView();
 });
 
-schedule_ok.addEventListener("click", function() {
+schedule_ok.addEventListener("click", async function() {
 
     const start = startTime.value;
     const end = endTime.value;
@@ -236,80 +304,76 @@ schedule_ok.addEventListener("click", function() {
         return;
     }
 
-    scheduleOpen = false;
+    const startDate = new Date(selectedYear, selectedMonth, selectedDay, start.split(":")[0], start.split(":")[1]);
+    const endDate = new Date(selectedYear, selectedMonth, selectedDay, end.split(":")[0], end.split(":")[1]);
 
-    const year = selectedYear;
-    const month = selectedMonth + 1;
-    const day = selectedDay;
-    const time = `${start} - ${end}`;   
+    try {
+        let endpoint = "";
+        let method = existingId ? "PATCH" : "POST";
+        let payload = {};
 
-    if (!data[year]) {
-        data[year] = {};
+        if (type === "plan") {
+            endpoint = existingId ? `${API_BASE_URL}/api/events/${existingId}` : `${API_BASE_URL}/api/events`;
+            payload = {
+                calendar_id: currentCalendarId,
+                title: title,
+                start_at: startDate.toISOString(),
+                end_at: endDate.toISOString()
+            };
+        } else if (type === "task") {
+            endpoint = existingId ? `${API_BASE_URL}/api/todos/${existingId}` : `${API_BASE_URL}/api/todos`;
+            
+            // Firebase AuthのメールアドレスからOMUIDを取得 (例: rt25044s@omu.ac.jp -> rt25044s)
+            const omuid = auth.currentUser.email.split('@')[0];
+            
+            payload = {
+                calendar_id: currentCalendarId,
+                title: title,
+                due_date: endDate.toISOString(), // タスクは終了時間を締切とする
+                assignments: {
+                    [omuid]: { assigned: true, completed: false }
+                }
+            };
+        }
+
+        await fetch(endpoint, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        // 成功したらデータを再取得してリロード
+        sessionStorage.setItem("reopenDayView", JSON.stringify({
+            year: selectedYear, month: selectedMonth, day: selectedDay
+        }));
+        location.reload(); 
+
+    } catch(e) {
+        console.error("保存失敗", e);
+        alert("保存に失敗しました");
     }
-
-    if (!data[year][month]) {
-        data[year][month] = {};
-    }
-
-    if (!data[year][month][day]) {
-        data[year][month][day] = {};
-    }
-
-    if(editingKey && editingKey !== time && data[year][month][day][editingKey]){
-        delete data[year][month][day][editingKey];
-    }
-
-    data[year][month][day][time] = {
-        title: title,
-        type:type
-    };
-
-    localStorage.setItem("schedule",JSON.stringify(data));
-
-    sessionStorage.setItem("reopenDayView",JSON.stringify({
-        year:year,
-        month:month -1,
-        day:day
-    }));
-
-    location.reload();
-
-    updateMonthlyCounts();
-
-    editingKey = null;
-    removeDeleteButton();
-    modal.style.display = "none";
 });
 
-function handleDeleteSchedule(){
-    if(!editingKey){
-        return;
+async function handleDeleteSchedule(){
+    if (!existingId) return;
+
+    // 現在開いているモーダルがTaskかPlanか判定
+    const type = taskRadio.checked ? "task" : "plan";
+    const endpoint = type === "plan" ? `${API_BASE_URL}/api/events/${existingId}` : `${API_BASE_URL}/api/todos/${existingId}`;
+
+    try {
+        await fetch(endpoint, {
+            method: "DELETE"
+        });
+
+        sessionStorage.setItem("reopenDayView", JSON.stringify({
+            year: selectedYear, month: selectedMonth, day: selectedDay
+        }));
+        location.reload(); 
+    } catch(e) {
+        console.error("削除失敗", e);
+        alert("削除に失敗しました");
     }
-    const year = selectedYear;
-    const month = selectedMonth + 1;
-    const day = selectedDay;
-
-    if (data?.[year]?.[month]?.[day]?.[editingKey]) {
-        delete data[year][month][day][editingKey];
-
-        if (Object.keys(data[year][month][day]).length === 0) {
-            delete data[year][month][day];
-        }
-        if (Object.keys(data[year][month]).length === 0) {
-            delete data[year][month];
-        }
-        if (Object.keys(data[year]).length === 0) {
-            delete data[year];
-        }
-
-        localStorage.setItem("schedule", JSON.stringify(data));
-        updateMonthlyCounts();
-    }
-
-    editingKey = null;
-    removeDeleteButton();
-    modal.style.display = "none";
-    scheduleOpen = false;
 }
 
 function openDayView(){
@@ -347,7 +411,7 @@ function renderDayview(){
         dayViewEvents.append(line);
     }
 
-    const daySchedule = data?.[selectedYear]?.[selectedMonth + 1]?.[selectedDay]; //オプショナルチェーン.存在しないならエラーにしない．
+    const daySchedule = data?.[selectedYear]?.[selectedMonth + 1]?.[selectedDay]; 
 
     if (daySchedule) {
         const entries = Object.entries(daySchedule).map(([time, info]) => {
@@ -357,7 +421,12 @@ function renderDayview(){
             if (end <= start) {
                 end = start + 30; // 最低の高さを確保
             }
-            return {time, startStr, endStr, start, end, title: info.title,type:info.type||"plan" };
+            return {
+                time, startStr, endStr, start, end, 
+                title: info.title,
+                type: info.type || "plan",
+                id: info.id
+            };
         });
 
         // 開始時刻順にソート
@@ -376,7 +445,7 @@ function renderDayview(){
 
             const widthPercent = 100 / entry.columnCount;
             eventEl.style.width = `calc(${widthPercent}% - 4px)`;
-            eventEl.style.left = `calc(${widthPercent * entry.column}% + 2px)`;//予定同士がぴったりくっつかないよう2pxのマージンを追加
+            eventEl.style.left = `calc(${widthPercent * entry.column}% + 2px)`;
 
             const timeEl = document.createElement("span");
             timeEl.classList.add("day-view-event-time");
@@ -398,20 +467,18 @@ function renderDayview(){
                     startStr: entry.startStr,
                     endStr: entry.endStr,
                     title: entry.title,
-                    type: entry.type
+                    type: entry.type,
+                    id: entry.id
                 });
             });
         });
 
     }
 
-// entries(ソート済み)に対して、重なっているグループごとに
-// column(自分が何番目か)と columnCount(グループの合計数)を割り当てる
 function assignOverlapColumns(entries) {
     let i = 0;
 
     while (i < entries.length) {
-        // ① iから始まる「連続して重なっているグループ」の終端 j を探す
         let groupEnd = entries[i].end;
         let j = i + 1;
 
@@ -419,17 +486,15 @@ function assignOverlapColumns(entries) {
             groupEnd = Math.max(groupEnd, entries[j].end);
             j++;
         }
-        // group は entries[i .. j-1]
-        const group = entries.slice(i, j);//sliceはi以上j未満の要素を取り出す．
+        const group = entries.slice(i, j);
         const columnCount = group.length;
 
-        // ② グループ内の各予定に column(0, 1, 2...)を振る
         group.forEach((entry, index) => {
             entry.column = index;
             entry.columnCount = columnCount;
         });
 
-        i = j; // 次のグループへ
+        i = j; 
     }
 }
 
@@ -457,10 +522,8 @@ function assignOverlapColumns(entries) {
         }
     });
 
-//one-day-view表示の時のみポップアップに削除を表示させる
-
 function addDeleteButton(){
-    removeDeleteButton(); //念のため既存の削除ボタンが存在した場合，削除する．
+    removeDeleteButton(); 
 
     const deleteBtn = document.createElement("button");
     deleteBtn.id = "schedule-delete";
@@ -488,7 +551,6 @@ function openScheduleModal(rect,existingEntry = null) {
     showDay.textContent = `${selectedMonth + 1}月${selectedDay}日のカレンダーの入力`;
 
 
-//以下one-day-view用の予定の詳細の確認を行うためのポップアップ呼び出し.
     if(existingEntry){
         startTime.value = existingEntry.startStr;
         endTime.value = existingEntry.endStr;
@@ -501,6 +563,7 @@ function openScheduleModal(rect,existingEntry = null) {
         }
 
         editingKey = existingEntry.time;
+        existingId = existingEntry.id;
         addDeleteButton();
     }
     else{
@@ -511,6 +574,7 @@ function openScheduleModal(rect,existingEntry = null) {
         taskRadio.checked = false;
 
         editingKey = null;
+        existingId = null;
         removeDeleteButton();
     }
 
@@ -532,6 +596,7 @@ scheduleCancel.addEventListener("click", function() {
     modal.style.display = "none";
     scheduleOpen = false;
     editingKey = null;
+    existingId = null;
     removeDeleteButton();
 });
 

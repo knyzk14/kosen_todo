@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.tab');
+    const active = document.querySelector('.active');
     const background = document.querySelector('.tab-background');
 
     const updateBackground = (activeTab) => {

@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta property="og:title" content="Kosen Todo / Dashboard" />
-    <meta property="og:description" content="高専生のためのタスク管理アプリ" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://todo.kyonshi.com/dashboard" />
-    <meta property="og:image" content="https://todo.kyonshi.com/res/img/banner.png" />
-    <meta property="og:site_name" content="Kosen Todo" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta property="og:title" content="Kosen Todo / Dashboard" />
+        <meta property="og:description" content="高専生のためのタスク管理アプリ" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://todo.kyonshi.com/dashboard" />
+        <meta property="og:image" content="https://todo.kyonshi.com/res/img/banner.png" />
+        <meta property="og:site_name" content="Kosen Todo" />
+        <meta name="twitter:card" content="summary_large_image" />
 
-    <link rel="stylesheet" href="/css/colors.css" />
-    <link rel="stylesheet" href="/css/common.css" />
-    <link rel="stylesheet" href="/css/dashboard.css" />
-    <link rel="stylesheet" href="/css/calender.css" />
-    <link rel="stylesheet" href="/css/sidebar.css" />
-    <link rel="stylesheet" href="/css/auth-guard.css" />
-    <title>Kosen todo</title>
-    <script src="/js/preload.js" defer></script>
-    <script src="/js/user-info.js" type="module" defer></script>
-    <script src="/js/auth-guard.js" type="module"></script>
-    <script src="/js/sidebar.js"></script>
-</head>
+        <link rel="stylesheet" href="/css/colors.css" />
+        <link rel="stylesheet" href="/css/common.css" />
+        <link rel="stylesheet" href="/css/dashboard.css" />
+        <link rel="stylesheet" href="/css/calender.css" />
+        <link rel="stylesheet" href="/css/sidebar.css" />
+        <link rel="stylesheet" href="/css/auth-guard.css" />
+        <title>Kosen todo</title>
+        <script src="/js/preload.js" type="module"></script>
+        <script src="/js/user-info.js" type="module"></script>
+        <script src="/js/auth-guard.js" type="module"></script>
+        <script src="/js/sidebar.js" defer></script>
+        <script src="/js/dashboard.js" type="module"></script>
+    </head>
     <body>
         <div class="main-container">
         <!-- application移動-->
@@ -101,7 +102,6 @@
             </div>
             <div id="schedule-modal" class="modal">
                 <div class="modal-content">
-
                     <!-- ドラッグ用 -->
                     <div id="modal-header" class="modal-header">
                         <h4 id="showDay"></h4>
@@ -122,7 +122,6 @@
                 </div>
             </div>
         </div>
-        <script src="../js/dashboard.js"></script>
         </main>
         </div>
         <sidebar>
@@ -134,7 +133,7 @@
             </div>
             <hr>
             <div class="profile">
-                <img id="user-icon" src="/res/img/default-icon.png" alt="User Icon" />
+                <img id="user-icon" src="" alt="User Icon" />
                 <div class="user-info">
                     <div id="user-name">読み込み中...</div>
                     <div id="user-email"></div>

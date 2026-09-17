@@ -56,11 +56,6 @@ sidebar {
     padding: 10px;
 }
 
-sidebar hr {
-    outline: none;
-    border: 1px solid var(--mute-text-color);
-}
-
 .tab {
     border: none;
     outline: none;
@@ -82,6 +77,33 @@ sidebar hr {
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-contents {
+    position: relative;
+    width: 100%;
+}
+
+.tab-pane {
+    display: none;
+    opacity: 0;
+    margin: 15px;
+}
+
+.tab-pane.active {
+    display: block;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @container sidebar (max-width: 280px) {

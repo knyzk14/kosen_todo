@@ -127,11 +127,21 @@
         <sidebar>
             <div class="tab-control">
                 <div class="tab-background"></div>
-                <button class="tab active">ToDoリスト</button>
-                <button class="tab">空き時間検索</button>
-                <button class="tab">共有カレンダー</button>
+                <button class="tab active" data-target="todo-content">ToDoリスト</button>
+                <button class="tab" data-target="freetime-content">空き時間検索</button>
+                <button class="tab" data-target="calendar-content">共有カレンダー</button>
             </div>
-            <hr>
+            <div class="tab-contents">
+                <div id="todo-content" class="tab-pane active">
+                    <p>ToDoリストのコンテンツ</p>
+                </div>
+                <div id="freetime-content" class="tab-pane">
+                    <p>空き時間検索のコンテンツ</p>
+                </div>
+                <div id="calendar-content" class="tab-pane">
+                    <p>共有カレンダーのコンテンツ</p>
+                </div>
+            </div>
             <div class="profile">
                 <img id="user-icon" src="" alt="User Icon" />
                 <div class="user-info">

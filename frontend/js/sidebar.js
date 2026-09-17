@@ -1,9 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const tabs = document.querySelectorAll('.tab');
-    const active = document.querySelector('.active');
-    const background = document.querySelector('.tab-background');
+const background = document.querySelector('.tab-background');
 
-    const updateBackground = (activeTab) => {
+const updateBackground = (activeTab) => {
         if (!activeTab) return;
         const tabLeft = activeTab.offsetLeft;
         const tabWidth = activeTab.offsetWidth;
@@ -11,6 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
         background.style.left = `${tabLeft}px`;
         background.style.width = `${tabWidth}px`;
     };
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.tab');
 
     tabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
@@ -21,4 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
             updateBackground(clickedTab);
         });
     });
+});
+
+window.addEventListener('load', () => {
+    const active = document.querySelector('.active');
+    setTimeout(() => {
+        updateBackground(active);
+        console.log(active.offsetWidth, active.offsetLeft);
+    }, 1000);
+});
+
+window.addEventListener('resize', () => {
+    const currentActive = document.querySelector('.active');
+    updateBackground(currentActive);
 });

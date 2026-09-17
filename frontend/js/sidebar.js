@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     pane.classList.remove('active');
                 }
             });
+
+            if (targetId === 'todo-content'){
+                if(typeof window.openTodayDayView === 'function'){
+                    window.openTodayDayView();
+                }
+            }
         });
     });
 });

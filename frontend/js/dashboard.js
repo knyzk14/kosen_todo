@@ -377,6 +377,9 @@ async function handleDeleteSchedule(){
 }
 
 function openDayView(){
+
+    restoreDayViewTOPopup();
+
     dayViewTitle.textContent = `${selectedMonth + 1}月${selectedDay}日の予定`;
     renderDayview();
     dayViewModal.style.display="flex"
@@ -475,6 +478,28 @@ function renderDayview(){
 
     }
 
+
+}
+
+window.openTodayDayView = function(){
+    if(scheduleOpen){
+        return;
+    }
+    const now = new Date();
+
+        selectedYear =now.getFullYear();
+        selectedMonth = now.getMonth();
+        selectedDay = now.getDate();
+        selectedDayElement = null;
+
+        embedDayViewInSidebar();
+        dayViewModal.style.display = "block";
+
+    dayViewTitle.textContent = `${selectedMonth +1}月${selectedDay}日の予定`;
+    renderDayview();
+
+}
+
 function assignOverlapColumns(entries) {
     let i = 0;
 
@@ -496,14 +521,49 @@ function assignOverlapColumns(entries) {
 
         i = j; 
     }
-}
+
 
     dayViewBody.scrollTop = 7 * HOUR_HEIGHT;
 }
     dayViewClose.addEventListener("click", closeDayView);
 
+    const dayViewOriginalParent = dayViewModal.parentNode;
+    const dayViewOriginalNextSibling = dayViewModal.nextSibling;
+    const sidebarDayViewSlot = document.querySelector("#sidebar-day-view-slot");
+
+    let dayViewEmbedded = false;
+
+    function embedDayViewInSidebar(){
+        if(dayViewEmbedded) return;
+
+        sidebarDayViewSlot.appendChild(dayViewModal);
+        dayViewModal.classList.add("day-view-embedded");
+
+        dayViewEmbedded = true;
+    }
+
+function restoreDayViewTOPopup(){
+    if(!dayViewEmbedded) return ;
+
+    dayViewModal.classList.remove("day-view-embedded");
+    dayViewModal.classList.add("modal","day-view-popup");
+    dayViewModal.style.display= "none";
+
+    if(dayViewOriginalNextSibling && dayViewOriginalNextSibling.parentNode ===dayViewOriginalParent){
+        dayViewOriginalParent.insertBefore(dayViewModal,dayViewOriginalNextSibling);
+    }else{
+        dayViewOriginalParent.appendChild(dayViewModal);
+    }
+
+    dayViewEmbedded = false;
+
+}
+
     // 背景(半透明の部分)をクリックしたら閉じる
     dayViewModal.addEventListener("click", function(event) {
+
+        if(dayViewEmbedded) return;
+
         if (event.target === dayViewModal) {
             closeDayView();
             modal.style.display="none";

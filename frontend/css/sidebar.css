@@ -65,6 +65,7 @@ sidebar {
     font-size: large;
     z-index: 2;
     cursor: pointer;
+    font-size: 15px;
 }
 
 .tab-background {

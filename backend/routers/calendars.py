@@ -129,6 +129,7 @@ def update_calendar(
         for username in unique_usernames:
             # 「ユーザー名@」で前方一致検索を行う
             user = db.query(models.User).filter(models.User.email.startswith(f"{username}@")).first()
+            print(f"usersearch: {username}, result: {user}")
             if user and user.id != calendar.owner_id:
                 users.append(user)
 

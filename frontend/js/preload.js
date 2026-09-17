@@ -36,7 +36,7 @@ export const toggleTheme = () => {
 
 initTheme();
 
-let currentCalendarId = null;
+let DefaultCalendarId = null;
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API_BASE_URL = isLocalhost ? 'https://todo.kyonshi.com' : '';
@@ -54,15 +54,15 @@ try {
 
     if (user) {
         const res = await fetch(`${API_BASE_URL}/api/calendars`);
-        
+
         if (res.ok) {
             const calendars = await res.json();
             const defaultCalendar = calendars.find(cal => cal.is_default === true);
 
             if (defaultCalendar) {
-                currentCalendarId = defaultCalendar.id;
+                DefaultCalendarId = defaultCalendar.id;
             } else if (calendars.length > 0) {
-                currentCalendarId = calendars[0].id;
+                DefaultCalendarId = calendars[0].id;
             }
         } else {
             console.error("カレンダーデータの取得に失敗しました。Status:", res.status);
@@ -74,4 +74,4 @@ try {
     console.error("カレンダーAPIへのアクセス時にエラーが発生しました:", e);
 }
 
-export { currentCalendarId };
+export { DefaultCalendarId };

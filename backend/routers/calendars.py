@@ -62,6 +62,7 @@ def create_calendar(
         "id": new_calendar.id,
         "title": new_calendar.title,
         "owner_username": owner_username,
+        "is_default": new_calendar.is_default,
         "members": [],
         "event_count": 0,
         "todo_count": 0

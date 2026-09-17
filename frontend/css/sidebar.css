@@ -37,6 +37,7 @@ sidebar {
     width: 46px;
     height: auto;
     border-radius: 50%;
+    pointer-events: none;
 }
 
 #user-name {

@@ -62,6 +62,7 @@ def create_calendar(
         "id": new_calendar.id,
         "title": new_calendar.title,
         "owner_username": owner_username,
+        "is_default": new_calendar.is_default,
         "members": [],
         "event_count": 0,
         "todo_count": 0
@@ -128,6 +129,7 @@ def update_calendar(
         for username in unique_usernames:
             # 「ユーザー名@」で前方一致検索を行う
             user = db.query(models.User).filter(models.User.email.startswith(f"{username}@")).first()
+            print(f"usersearch: {username}, result: {user}")
             if user and user.id != calendar.owner_id:
                 users.append(user)
 
@@ -149,6 +151,7 @@ def update_calendar(
         "id": calendar.id,
         "title": calendar.title,
         "owner_username": owner_username,
+        "is_default": calendar.is_default,
         "members": members,
         "event_count": len(calendar.events),
         "todo_count": len(calendar.todos)

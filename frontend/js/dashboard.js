@@ -721,7 +721,7 @@ function renderIcons() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// document.addEventListener('DOMContentLoaded', () => {
     const addButton = document.querySelector('.app-add');
     const popup = document.querySelector('.app-icon-popup');
     const submitBtn = popup?.querySelector('.app-icon-submit');
@@ -732,8 +732,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteBtn = document.querySelector('.app-icon-delete');
 
     renderIcons();
-
-    if (!addButton || !popup || !submitBtn) return;
 
     addButton.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -829,7 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderIcons();
     });
-});
+//});
 
 const appMenu = document.querySelector('.app-menu');
 if (appMenu) {
@@ -839,7 +837,7 @@ if (appMenu) {
 
     appMenu.addEventListener('drop', (e) => {
         e.preventDefault();
-        
+
         const draggedId = e.dataTransfer.getData('text/plain');
         if (!draggedId) return;
 
@@ -850,7 +848,6 @@ if (appMenu) {
         if (draggedId === targetId) return;
 
         let icons = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        
         const draggedIndex = icons.findIndex(icon => icon.id == draggedId);
         const targetIndex = icons.findIndex(icon => icon.id == targetId);
 

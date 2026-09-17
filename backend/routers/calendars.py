@@ -150,6 +150,7 @@ def update_calendar(
         "id": calendar.id,
         "title": calendar.title,
         "owner_username": owner_username,
+        "is_default": calendar.is_default,
         "members": members,
         "event_count": len(calendar.events),
         "todo_count": len(calendar.todos)

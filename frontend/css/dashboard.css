@@ -455,6 +455,7 @@ main {
 .day-view-hours {
     flex-shrink: 0;
     width: 55px;
+    height: fit-content;
 
     box-sizing: border-box;
     border-right: 1px solid #e0e0e0;

@@ -668,49 +668,50 @@ scheduleCancel.addEventListener("click", function() {
 let isDragging = false;
 let offsetX = 0;
 let offsetY = 0;
+let animationFrameId = null;
 
 modalHeader.addEventListener("mousedown", function(event) {
     isDragging = true;
+
     const rect = modal.getBoundingClientRect();
+    modal.style.transform = "none";
+    modal.style.margin = "0";
+    modal.style.left = rect.left + "px";
+    modal.style.top = rect.top + "px";
     offsetX = event.clientX - rect.left;
     offsetY = event.clientY - rect.top;
 });
 
 document.addEventListener("mousemove", function(event) {
-    if (!isDragging) {
-        return;
+    if (!isDragging) return;
+
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
     }
 
-    if (modal.contains(event.target)) {
-        return;
-    }
+    animationFrameId = requestAnimationFrame(() => {
+        let x = event.clientX - offsetX;
+        let y = event.clientY - offsetY;
 
-    let x = event.clientX - offsetX;
-    let y = event.clientY - offsetY;
+        const width = modal.offsetWidth;
+        const height = modal.offsetHeight;
 
-    const width = modal.offsetWidth;
-    const height = modal.offsetHeight;
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        if (x + width > window.innerWidth) x = window.innerWidth - width;
+        if (y + height > window.innerHeight) y = window.innerHeight - height;
 
-    if (x < 0) {
-        x = 0;
-    }
-    if (y < 0) {
-        y = 0;
-    }
-
-    if (x + width > window.innerWidth) {
-        x = window.innerWidth - width;
-    }
-    if (y + height > window.innerHeight) {
-        y = window.innerHeight - height;
-    }
-
-    modal.style.left = `${x}px`;
-    modal.style.top = `${y}px`;
+        modal.style.left = `${x}px`;
+        modal.style.top = `${y}px`;
+    });
 });
 
 document.addEventListener("mouseup", function() {
     isDragging = false;
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
 });
 
 

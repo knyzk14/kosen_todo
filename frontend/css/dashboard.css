@@ -289,23 +289,26 @@ main {
 .modal-content{
     padding:15px;
     width: 270px;
-
+    border-radius: 10px;
     background:white;
     border:2px solid;
     border-color: #333;
+    box-shadow: 0 0 1px gray;
 }
+
 .modal-header{
-    padding:8px;
+    padding:2px;
     margin-bottom:15px;
+    border-radius: 5px;
 
     background:#eee;
 
-    cursor:grab; 
-    user-select:none; 
+    cursor:grab;
+    user-select:none;
 }
 
 .modal-header:active {
-    cursor: grabbing; 
+    cursor: grabbing;
 }
 
 
@@ -320,17 +323,23 @@ main {
 }
 
 .time-input input {
-    width:90px;
+    width:100%;
     height:40px;
-
+    border-radius: 5px;
+    border: 1px solid var(--mute-text-color);
+    padding: 0 10px;
+    outline: none;
     font-size:19px;
 }
 
 #schedule-title{
     width:100%;
     height:130px;
-
-    box-sizing:border-box;
+    border-radius: 5px;
+    border: 1px solid var(--mute-text-color);
+    padding: 0 10px;
+    outline: none;
+    box-sizing: border-box;
 
     resize:none;
 
@@ -368,6 +377,11 @@ main {
     gap:10px;
 
     font-size: 16px;
+}
+
+#showDay {
+    margin: 10px 0;
+    text-align: center;
 }
 
 /* ==============================
@@ -420,10 +434,11 @@ main {
 #day-view-add {
     background: #fdfdfd;
     border: none;
-    border-bottom: 1px solid black;
+    border-radius: 5px;
     padding: 5px 10px;
     font-size: 13px;
     cursor: pointer;
+    transition: color 0.1s ease;
 }
 
 #day-view-add:hover{
@@ -438,6 +453,7 @@ main {
     font-size: 18px;
     line-height: 1;
     cursor: pointer;
+    transition: color 0.1s ease;
 }
 
 #day-view-close:hover {

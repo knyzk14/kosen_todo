@@ -24,6 +24,12 @@ sidebar {
     border-radius: 10px;
     background-color: var(--user-profile-background-color);
     box-shadow: 0 4px 4px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.profile:hover {
+    transform: scale(1.05);
 }
 
 .user-info {

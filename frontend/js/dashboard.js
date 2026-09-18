@@ -297,6 +297,11 @@ schedule_ok.addEventListener("click", async function() {
     const title = scheduleTitle.value;
     const type = taskRadio.checked ? "task" :(planRadio.checked ? "plan" :null);
 
+    function toLocalISOString(date) {
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1);
+    }
+
     if(start==="" || end===""||title ===""||!type){
         alert("入力されていない項目があります．");
         return;
@@ -319,8 +324,8 @@ schedule_ok.addEventListener("click", async function() {
             payload = {
                 calendar_id: activeCalendarId,
                 title: title,
-                start_at: startDate.toISOString(),
-                end_at: endDate.toISOString()
+                start_at: toLocalISOString(startDate),
+                end_at: toLocalISOString(endDate)
             };
         } else if (type === "task") {
             endpoint = existingId ? `${API_BASE_URL}/api/todos/${existingId}` : `${API_BASE_URL}/api/todos`;
@@ -329,7 +334,7 @@ schedule_ok.addEventListener("click", async function() {
             payload = {
                 calendar_id: activeCalendarId,
                 title: title,
-                due_date: endDate.toISOString(), // タスクは終了時間を締切とする
+                due_date: toLocalISOString(endDate), // タスクは終了時間を締切とする
                 assignments: {
                     [userid]: { assigned: true, completed: false }
                 }

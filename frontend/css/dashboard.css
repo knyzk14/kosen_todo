@@ -373,7 +373,7 @@ main {
 /* ==============================
     Day View 
    ============================== */
-#day-view-modal {
+#day-view-modal.day-view-popup{
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.4);
@@ -559,4 +559,26 @@ main {
 
 #schedule-cancel:hover{
     background: cornsilk;
+}
+
+.day-view-embedded{
+    position:static !important;
+    width:100% !important;
+    height:auto !important;
+    background: transparent !important;
+    display: block !important;
+    z-index:auto !important ;
+}
+
+.day-view-embedded .day-view-content{
+    width:100%;
+    max-width:100%;
+    max-height: 750px;
+    box-shadow:none;
+    border-radius:8px;
+    margin:0;
+}
+
+.day-view-embedded #day-view-close{
+    display: none;
 }

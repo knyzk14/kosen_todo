@@ -146,7 +146,14 @@
                             <span>
                                 <h4 id="group-select-font">グループ選択</h4>
                                 <button id="group-add-btn">＋ 新規追加</button>
+                                <button id="group-edit-btn" title="修正">✎</button>      <!-- ← 追加 -->
+                                <button id="group-delete-btn" title="削除">🗑</button>    <!-- ← 追加 -->
                             </span>
+                        </div>
+                        <div id="group-mode-bar" class="group-mode-bar" style="display:none;">
+                            <span id="group-mode-note"></span>
+                            <button id="group-mode-cancel">キャンセル</button>
+                            <button id="group-mode-submit">削除</button>   <!-- 削除モードのときだけ表示 -->
                         </div>
                         <div id="group-list" class="group-list"></div>
                     </div>
@@ -227,10 +234,10 @@
                     <div id="group-add-view" class="group-add-view" style="display:none;">
                         <div class="ts-header">
                             <button id="group-add-back-btn">◀ 戻る</button>
-                            <h4>新規追加</h4>
+                            <h4 id="group-add-title">新規追加</h4>
                         </div>
                     
-                        <p class="group-add-note">新規追加する人を以下から選んでください</p>
+                        <p id="group-add-note" class="group-add-note">新規追加する人を以下から選んでください</p>
                     
                         <!-- 共有カレンダーの名前。グループ選択の一覧に名前が必要なので置いた -->
                         <input type="text" id="group-add-name" placeholder="グループ名を入力...">
@@ -242,7 +249,6 @@
                     </div>
                 </div><!-- /#TimeScheduleTree-content -->
             </div><!-- /.tab-contents  ← 元のコードにあった閉じタグ。ここに移動しただけ -->
-            </div>
             <div class="profile">
                 <img id="user-icon" src="" alt="User Icon" />
                 <div class="user-info">

@@ -26,11 +26,11 @@ sidebar {
     box-shadow: 0 4px 4px rgba(0,0,0,0.15);
     cursor: pointer;
     transition: transform 0.2s ease;
-}
+} 
 
 .profile:hover {
     transform: scale(1.05);
-}
+} 
 
 .user-info {
     display: flex;
@@ -119,3 +119,319 @@ sidebar {
         display: none;
     }
 }
+
+.ts-title {
+    display: flex;
+    align-content:center;
+    justify-content: center;
+    background-color: #888;
+}
+
+#group-select-font{
+    font-size:15px;
+    color: white;
+}
+ 
+.ts-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+ 
+.ts-header button {
+    background-color: #fdfdfd;
+    border: none;
+    border-bottom: 1px solid #333;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+ 
+.ts-header h4 {
+    margin: 0;
+    font-size: 15px;
+}
+ 
+/* 丸いアイコン */
+.group-member-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #666;
+    flex-shrink: 0;
+}
+ 
+ 
+/* ---- ① グループ選択 ---- */
+.group-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: 500px;
+    overflow-y: auto;
+}
+ 
+.group-block {                      /* ★新規: グループ1個分の枠 */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: auto;
+    background: var(--background-color, #fff);
+}
+ 
+.group-block-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 14px;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+ 
+.group-block-title::after {         /* 「押せる」目印 */
+    content: "▶";
+    font-size: 11px;
+    color: #888;
+}
+ 
+.group-block-title:hover {
+    background: #ececec;
+}
+ 
+.group-member-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-top: 1px solid #f0f0f0;
+}
+ 
+.group-member-row:first-of-type {   /* 最初の人だけ上線なし(タイトルの線と重なるため) */
+    border-top: none;
+}
+ 
+ 
+/* ---- ② グループ詳細 ---- */
+.mini-calender {
+    margin-bottom: 14px;
+}
+ 
+/* 見出し: 左に「9 2026/September」、右に ◀ ▶ */
+.mini-cal-header,
+.mini-member-cal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+ 
+.mini-cal-year,
+.member-cal-year {
+    margin-right: auto;             /* ◀ ▶ を右に寄せる */
+}
+ 
+.mini-year-month,
+.member-year-month {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+ 
+#mini-month-title,
+#member-month-title {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1;
+}
+ 
+.mini-sub-title h2,
+.member-sub-title h2 {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.3;
+}
+ 
+.mini-cal-header button,
+.mini-member-cal-header button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+}
+ 
+.member-cal-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+ 
+/* 中身が空の予備の span(JSでは使っていない)は見えなくしておく */
+#mini-cal-month-label,
+#mini-member-cal-month-label {
+    display: none;
+}
+ 
+/* 曜日の行 / 日付のマス(② と ③ は同じ見た目) */
+.mini-cal-week,
+.mini-member-cal-week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));   /* minmax(0,…) で横にはみ出さない */
+    font-size: 10px;
+    color: #888;
+    text-align: center;
+    margin-bottom: 2px;
+}
+ 
+.mini-cal-days,
+.mini-member-cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+}
+ 
+.mini_day,
+.members_day {
+    min-height: 34px;
+    padding: 2px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: var(--background-color, #fff);
+    box-sizing: border-box;
+    cursor: pointer;
+}
+ 
+.mini_day:hover,
+.members_day:hover {
+    background: #f4f8ff;
+}
+ 
+.mini_day p,
+.members_day p {
+    margin: 0;
+    font-size: 11px;
+    text-align: center;
+}
+ 
+.mini_day hr,
+.members_day hr {
+    margin: 2px 0;
+    border: none;
+    border-top: 1px solid #ddd;
+}
+ 
+.mini-disabled,
+.members_disabled {                 /* 月初の空白マス */
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 4px;
+}
+ 
+/* メンバー一覧(多いとスクロール) */
+.group-members {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+ 
+.group-member-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    background: var(--background-color, #fff);
+    cursor: pointer;
+    font-size: 13px;
+}
+ 
+.group-member-item:hover {
+    background: #f7f7f7;
+}
+ 
+ 
+/* ---- ③ メンバー詳細 ---- */
+.member-detail-cal {
+    margin-bottom: 14px;
+}
+
+#group-add-btn {
+    padding: 2px 10px;
+    border: 1px solid #fff;
+    border-radius: 12px;
+    background: transparent;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+}
+ 
+#group-add-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+ 
+/* ④ 新規追加画面 */
+.group-add-note {
+    margin: 0 0 8px;
+    font-size: 13px;
+}
+ 
+#group-add-name {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+}
+ 
+#group-add-list {
+    max-height: 300px;      /* 人が多いとここでスクロール */
+}
+ 
+/* 選ばれている人(クリックで付く / もう一度クリックで外れる) */
+.group-member-item.selected {
+    border-color: #4a90e2;
+    background: #eaf2ff;
+}
+ 
+.group-member-item.selected::after {
+    content: "✓";
+    margin-left: auto;
+    color: #4a90e2;
+    font-weight: bold;
+}
+ 
+#group-add-submit {
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    background: #4a90e2;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+}
+ 
+#group-add-submit:hover {
+    background: #3a7bc8;
+}
+
+.ts-title span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+#group-select-font { margin: 0; }

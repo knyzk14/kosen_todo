@@ -138,9 +138,110 @@
                 <div id="freetime-content" class="tab-pane">
                     <p>空き時間検索のコンテンツ</p>
                 </div>
-                <div id ="TimeScheduleTree-content" class="tab-pane">
-                    <p>タイムスケジュールツリーのコンテンツ</p>
-                </div>
+                <div id="TimeScheduleTree-content" class="tab-pane">
+ 
+                    <!-- ① グループ選択画面 -->
+                    <div id="group-select-view" class="group-select-view">
+                        <div class="ts-title">
+                            <span>
+                                <h4 id="group-select-font">グループ選択</h4>
+                                <button id="group-add-btn">＋ 新規追加</button>
+                            </span>
+                        </div>
+                        <div id="group-list" class="group-list"></div>
+                    </div>
+                
+                    <!-- ② グループ詳細画面(上:共有カレンダー / 下:メンバー一覧) -->
+                    <div id="group-detail-view" class="group-detail-view">
+                        <div class="ts-header">
+                            <button id="group-back-btn">◀ 戻る</button>
+                            <h4 id="group-detail-title"></h4>
+                        </div>
+                
+                        <!-- カレンダーを別途で作成 -->
+                        <div class="mini-calender">
+                            <div class="mini-cal-header">
+                                <div class="mini-cal-year">
+                                    <div class="mini-year-month">
+                                        <h2 id="mini-month-title">12</h2>
+                                        <div class="mini-sub-title">
+                                            <h2 id="mini-year-title">2024</h2>
+                                            <h2 id="mini-month-name">December</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button id="mini-cal-prev">◀</button>
+                                <span id="mini-cal-month-label"></span>
+                                <button id="mini-cal-next">▶</button>
+                            </div>
+                            <div class="mini-cal-week">
+                                <div>日</div>
+                                <div>月</div>
+                                <div>火</div>
+                                <div>水</div>
+                                <div>木</div>
+                                <div>金</div>
+                                <div>土</div>
+                            </div>
+                            <div class="mini-cal-days"></div>
+                            <div class="group-members" id="group-members"></div>
+                        </div>
+                    </div>
+                
+                    <!-- ③ メンバー詳細画面(その人のカレンダー) -->
+                    <div id="member-detail-view" class="member-detail-view" style="display:none;">
+                        <div class="ts-header">
+                            <button id="member-back-btn">◀ 戻る</button>
+                            <h4 id="member-detail-title"></h4>
+                        </div>
+                        <div id="member-detail-cal" class="member-detail-cal">
+                            <div class="mini-member-cal-header">
+                                <div class="member-cal-year">
+                                    <div class="member-year-month">
+                                        <h2 id="member-month-title">12</h2>
+                                        <div class="member-sub-title">
+                                            <h2 id="member-year-title">2024</h2>
+                                            <h2 id="member-month-name">December</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="member-cal-btn" id="member-cal-btn">
+                                    <button id="mini-member-cal-prev">◀</button>
+                                    <span id="mini-member-cal-month-label"></span>
+                                    <button id="mini-member-cal-next">▶</button>
+                                </div>
+                            </div>
+                            <div class="mini-member-cal-week">
+                                <div>日</div>
+                                <div>月</div>
+                                <div>火</div>
+                                <div>水</div>
+                                <div>木</div>
+                                <div>金</div>
+                                <div>土</div>
+                            </div>
+                            <div class="mini-member-cal-days"></div>
+                        </div>
+                    </div>
+                    <!-- ④ 新規追加画面 -->
+                    <div id="group-add-view" class="group-add-view" style="display:none;">
+                        <div class="ts-header">
+                            <button id="group-add-back-btn">◀ 戻る</button>
+                            <h4>新規追加</h4>
+                        </div>
+                    
+                        <p class="group-add-note">新規追加する人を以下から選んでください</p>
+                    
+                        <!-- 共有カレンダーの名前。グループ選択の一覧に名前が必要なので置いた -->
+                        <input type="text" id="group-add-name" placeholder="グループ名を入力...">
+                    
+                        <!-- 人の一覧(JSが作る。多いとスクロール) -->
+                        <div id="group-add-list" class="group-members"></div>
+                    
+                        <button id="group-add-submit">追加</button>
+                    </div>
+                </div><!-- /#TimeScheduleTree-content -->
+            </div><!-- /.tab-contents  ← 元のコードにあった閉じタグ。ここに移動しただけ -->
             </div>
             <div class="profile">
                 <img id="user-icon" src="" alt="User Icon" />

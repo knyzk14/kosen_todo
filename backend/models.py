@@ -34,6 +34,8 @@ class User(Base):
 
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(100), default="名称未設定")
+    icon_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     owned_calendars: Mapped[List["Calendar"]] = relationship(
         "Calendar", back_populates="owner", cascade="all, delete-orphan"

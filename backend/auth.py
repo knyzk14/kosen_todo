@@ -26,37 +26,46 @@ ALLOWED_EMAIL_DOMAINS = [
 def get_current_user(
     creds: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
-) -> str:
+):
     try:
         decoded_token = firebase_auth.verify_id_token(creds.credentials)
         uid = decoded_token.get("uid")
         email = decoded_token.get("email")
+        
+        # 追加: Firebaseのトークンから表示名と画像URLを取得
+        display_name = decoded_token.get("name", "名称未設定")
+        icon_url = decoded_token.get("picture")
 
-        if not uid:
-            raise ValueError("トークンにUIDが含まれていません")
-
-        # ドメイン制限のチェック
-        if email and ALLOWED_EMAIL_DOMAINS:
-            domain = email.split("@")[-1]
-            if domain not in ALLOWED_EMAIL_DOMAINS:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="許可されていないメールアドレスのドメインです"
-                )
-
-    except HTTPException:
-        raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="無効な認証情報です",
+            detail="無効な認証トークンです",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = db.query(models.User).filter(models.User.id == uid).first()
+    if email:
+        domain = email.split("@")[-1]
+        if domain not in ALLOWED_EMAIL_DOMAINS:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"許可されていないドメインです: {domain}"
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="メールアドレスが取得できません"
+        )
 
+    user = db.query(models.User).filter(models.User.id == uid).first()
+    
     if not user:
-        user = models.User(id=uid, email=email or "no-email@example.com")
+        # 新規作成時に表示名とアイコンも保存
+        user = models.User(
+            id=uid, 
+            email=email, 
+            display_name=display_name, 
+            icon_url=icon_url
+        )
         db.add(user)
         db.flush()
 
@@ -66,7 +75,14 @@ def get_current_user(
             is_default=True
         )
         db.add(default_calendar)
+        
         db.commit()
         db.refresh(user)
+    else:
+        # 既存ユーザーでも、情報が更新されていれば同期する
+        if user.display_name != display_name or user.icon_url != icon_url:
+            user.display_name = display_name
+            user.icon_url = icon_url
+            db.commit()
 
     return user.id

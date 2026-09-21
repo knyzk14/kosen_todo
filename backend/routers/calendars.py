@@ -23,22 +23,30 @@ class CalendarUpdate(BaseModel):
     title: Optional[str] = None
     member_usernames: Optional[List[str]] = None
 
-class UserResponse(BaseModel):
+class UserProfile(BaseModel):
     username: str
-    email: str
+    display_name: str
+    icon_url: Optional[str]
 
 class CalendarResponse(BaseModel):
     id: uuid.UUID
     title: str
-    owner_username: str
+    owner: UserProfile   # owner_username(文字列)から詳細なUserProfileオブジェクトに変更
     is_default: bool
-    members: List[str] = []
+    members: List[UserProfile] = [] # List[str] から詳細オブジェクトのリストに変更
     event_count: int = 0
     todo_count: int = 0
 
 class CalendarDataResponse(BaseModel):
     events: List[EventResponse]
     todos: List[TodoResponse]
+
+def _to_user_profile(user_model: models.User) -> dict:
+    return {
+        "username": user_model.email.split("@")[0],
+        "display_name": user_model.display_name,
+        "icon_url": user_model.icon_url
+    }
 
 # APIエンドポイント
 
@@ -61,7 +69,7 @@ def create_calendar(
     return {
         "id": new_calendar.id,
         "title": new_calendar.title,
-        "owner_username": owner_username,
+        "owner": _to_user_profile(user),
         "is_default": new_calendar.is_default,
         "members": [],
         "event_count": 0,
@@ -89,9 +97,9 @@ def get_calendars(
         result.append({
             "id": cal.id,
             "title": cal.title,
-            "owner_username": owner_username,
+            "owner": _to_user_profile(cal.owner),
             "is_default": cal.is_default,
-            "members": members,
+            "members": [_to_user_profile(m) for m in cal.members],
             "event_count": len(cal.events),
             "todo_count": len(cal.todos)
         })
@@ -150,9 +158,9 @@ def update_calendar(
     return {
         "id": calendar.id,
         "title": calendar.title,
-        "owner_username": owner_username,
+        "owner": _to_user_profile(calendar.owner),
         "is_default": calendar.is_default,
-        "members": members,
+        "members": [_to_user_profile(m) for m in calendar.members],
         "event_count": len(calendar.events),
         "todo_count": len(calendar.todos)
     }

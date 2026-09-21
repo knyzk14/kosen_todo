@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from typing import List, Optional
-# 変更点: JSONをインポートに追加
 from sqlalchemy import ForeignKey, String, Text, DateTime, Boolean, Table, Column, JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -83,6 +82,8 @@ class Event(Base):
     end_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     calendar: Mapped["Calendar"] = relationship("Calendar", back_populates="events")
+    creator_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    is_private: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 
 class Todo(Base):
@@ -104,6 +105,8 @@ class Todo(Base):
 
     source: Mapped[str] = mapped_column(String(50), default="local", nullable=False)
     external_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    creator_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    is_private: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 class Tag(Base):
     __tablename__ = "tags"

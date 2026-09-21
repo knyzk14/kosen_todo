@@ -19,12 +19,14 @@ class TodoCreate(BaseModel):
     due_date: Optional[datetime] = None
     tag_ids: List[uuid.UUID] = []
     assignments: Dict = {}
+    is_private: bool = False # 追加
 
 class TodoUpdate(BaseModel):
     title: Optional[str] = None
     due_date: Optional[datetime] = None
     assignments: Optional[Dict] = None
     tag_ids: Optional[List[uuid.UUID]] = None
+    is_private: Optional[bool] = None # 追加
 
 class TodoResponse(BaseModel):
     id: uuid.UUID
@@ -33,6 +35,8 @@ class TodoResponse(BaseModel):
     due_date: Optional[datetime]
     assignments: Dict
     tag_ids: List[uuid.UUID] = []
+    creator_id: str  # 追加
+    is_private: bool # 追加
 
 # APIエンドポイント
 
@@ -62,7 +66,9 @@ def create_todo(
         calendar_id=todo_data.calendar_id,
         title=todo_data.title,
         due_date=todo_data.due_date,
-        assignments=todo_data.assignments
+        assignments=todo_data.assignments,
+        creator_id=user_id,             # 追加
+        is_private=todo_data.is_private # 追加
     )
 
     if todo_data.tag_ids:
@@ -100,10 +106,16 @@ def update_todo(
     if todo.calendar.owner_id != user_id and not is_member:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
+    # 非公開ToDoの編集制限
+    if todo.is_private and todo.creator_id != user_id and todo.calendar.owner_id != user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="他人の非公開ToDoは編集できません")
+
     if todo_data.title is not None:
         todo.title = todo_data.title
     if todo_data.due_date is not None:
         todo.due_date = todo_data.due_date
+    if todo_data.is_private is not None:
+        todo.is_private = todo_data.is_private
     if todo_data.tag_ids is not None:
         tags = db.query(models.Tag).filter(models.Tag.id.in_(todo_data.tag_ids)).all()
         if len(tags) != len(todo_data.tag_ids):
@@ -112,11 +124,9 @@ def update_todo(
 
     # 辞書型の権限チェックと更新
     if todo_data.assignments is not None:
-        # 現在の操作ユーザーのユーザー名を取得
         current_user = db.query(models.User).filter(models.User.id == user_id).first()
         current_username = current_user.email.split("@")[0]
 
-        # バリデーション
         valid_usernames = {todo.calendar.owner.email.split("@")[0]} | {m.email.split("@")[0] for m in todo.calendar.members}
         invalid_usernames = [uname for uname in todo_data.assignments.keys() if uname not in valid_usernames]
         if invalid_usernames:
@@ -126,7 +136,6 @@ def update_todo(
             for uname, status_data in todo_data.assignments.items():
                 old_status = todo.assignments.get(uname, {})
                 if isinstance(status_data, dict) and isinstance(old_status, dict):
-                    # 変更: UIDではなくユーザー名(uname)で自身の完了状態か判定する
                     if old_status.get("completed") != status_data.get("completed") and uname != current_username:
                         raise HTTPException(
                             status_code=status.HTTP_403_FORBIDDEN,
@@ -156,7 +165,9 @@ def delete_todo(
     todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ToDoが見つかりません")
-    if todo.calendar.owner_id != user_id:
+        
+    # カレンダーオーナー、または作成者本人のみ削除可能
+    if todo.calendar.owner_id != user_id and todo.creator_id != user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="削除権限がありません")
 
     calendar_id = todo.calendar_id

@@ -185,13 +185,12 @@ def delete_calendar(
     return
 
 # カレンダーデータ取得 (GET)
-@router.get("/{calendar_id}/data", response_model=CalendarDataResponse)
+@router.get("/{calendar_id}/data")
 def get_calendar_data(
     calendar_id: uuid.UUID,
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-
     calendar = db.query(models.Calendar).filter(models.Calendar.id == calendar_id).first()
     if not calendar:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="カレンダーが見つかりません")
@@ -200,13 +199,57 @@ def get_calendar_data(
     if calendar.owner_id != user_id and not is_member:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="権限がありません")
 
-    events = db.query(models.Event).filter(models.Event.calendar_id == calendar_id).all()
-    todos = db.query(models.Todo).filter(models.Todo.calendar_id == calendar_id).all()
+    # 予定 (Events) のマスキング処理
+    events_res = []
+    for ev in calendar.events:
+        if ev.is_private and ev.creator_id != user_id:
+            # 他人の非公開予定はマスキングして返す
+            events_res.append({
+                "id": ev.id,
+                "calendar_id": ev.calendar_id,
+                "title": "予定あり",
+                "description": None,
+                "start_at": ev.start_at,
+                "end_at": ev.end_at,
+                "is_private": True
+            })
+        else:
+            # 作成者本人（または公開予定）はそのまま返す
+            events_res.append({
+                "id": ev.id,
+                "calendar_id": ev.calendar_id,
+                "title": ev.title,
+                "description": ev.description,
+                "start_at": ev.start_at,
+                "end_at": ev.end_at,
+                "is_private": ev.is_private
+            })
 
-    return {
-        "events": events,
-        "todos": todos
-    }
+    # ToDoのマスキング処理
+    todos_res = []
+    for td in calendar.todos:
+        if td.is_private and td.creator_id != user_id:
+            todos_res.append({
+                "id": td.id,
+                "calendar_id": td.calendar_id,
+                "title": "予定あり",
+                "due_date": td.due_date,
+                "assignments": td.assignments,
+                "tag_ids": [t.id for t in td.tags],
+                "is_private": True
+            })
+        else:
+            todos_res.append({
+                "id": td.id,
+                "calendar_id": td.calendar_id,
+                "title": td.title,
+                "due_date": td.due_date,
+                "assignments": td.assignments,
+                "tag_ids": [t.id for t in td.tags],
+                "is_private": td.is_private
+            })
+
+    return {"events": events_res, "todos": todos_res}
 
 # カレンダーからの脱退 (DELETE)
 @router.delete("/{calendar_id}/leave", status_code=status.HTTP_204_NO_CONTENT)

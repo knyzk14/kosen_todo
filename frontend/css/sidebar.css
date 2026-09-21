@@ -126,6 +126,10 @@ sidebar {
     align-content:center;
     justify-content: center;
     background-color: #888;
+
+    height: 50px;
+    border-radius: 10px ;
+    margin-bottom: 20px;
 }
 
 #group-select-font{
@@ -147,6 +151,7 @@ sidebar {
     padding: 4px 10px;
     font-size: 12px;
     cursor: pointer;
+    border-radius: 5px;
 }
  
 .ts-header h4 {
@@ -167,8 +172,28 @@ sidebar {
     color: #666;
     flex-shrink: 0;
 }
+
+#new-member-username {
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    width: 60%;
+    height: 30px;
+}
  
- 
+#add-member-temp-btn {
+    border: none;
+    background-color: #3a7bc8;
+    color: var(--background-color);
+    outline: none;
+    border-radius: 5px;
+    height: 30px;
+    padding: 10px;
+    cursor: pointer;
+    box-sizing: border-box;
+    margin-left: 10px;
+}
+
 /* ---- ① グループ選択 ---- */
 .group-list {
     display: flex;
@@ -500,4 +525,11 @@ sidebar {
 /* モード中は「▶」の目印を消す(押すと開くのではなく、チェックするため) */
 .group-block-title:has(.group-check)::after {
     content: none;
+}
+
+/*-----------*/
+
+#sidebar-day-view-slot {
+    width: 95%;
+    margin: auto;
 }

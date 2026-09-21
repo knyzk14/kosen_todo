@@ -16,6 +16,7 @@
         <link rel="stylesheet" href="/css/dashboard.css" />
         <link rel="stylesheet" href="/css/calender.css" />
         <link rel="stylesheet" href="/css/sidebar.css" />
+        <link rel="stylesheet" href="/css/freetime.css" />
         <link rel="stylesheet" href="/css/auth-guard.css" />
         <title>Kosen todo</title>
         <script src="/js/preload.js" type="module"></script>
@@ -138,7 +139,16 @@
                     <div id="sidebar-day-view-slot"></div>
                 </div>
                 <div id="freetime-content" class="tab-pane">
-                    <p>空き時間検索のコンテンツ</p>
+                    <div class="freetime-input">
+                        <input type="datetime-local" id="freetime-start">
+                        <span>～</span>
+                        <input type="datetime-local" id="freetime-end">
+                    </div>
+                    <div class="members">
+                    </div>
+                    <button class="freetime-search">検索</button>
+                    <hr>
+                    <div id="freebusy-results"></div>
                 </div>
                 <div id="TimeScheduleTree-content" class="tab-pane">
                     <!-- ① グループ選択画面 -->

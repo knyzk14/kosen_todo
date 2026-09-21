@@ -1,4 +1,4 @@
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import app from "./firebase-init.js";
 
 const auth = getAuth(app);
@@ -21,3 +21,9 @@ onAuthStateChanged(auth, (user) => {
     console.log("ユーザーID:", user.uid);
   }
 });
+
+
+
+window.signout = async function() {
+    signOut(auth)
+}

@@ -1,0 +1,122 @@
+#freetime-content.active {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    height: 100%;
+}
+
+#freetime-content > hr {
+    width: 40%;
+    height: 1px;
+    outline: none;
+    border-top: 1px solid var(--text-color-disabled);
+    box-sizing: border-box;
+}
+
+.freetime-input {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.freetime-input > input {
+    width: 30%;
+    height: 40px;
+    padding: 10px;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 10px;
+}
+
+.members {
+    display: flex;
+    height: 80px;
+    width: 90%;
+    margin-left: 5%;
+    gap:10px;
+    padding: 5px;
+    overflow-x: auto;
+}
+
+.avatar-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px;
+    width: 100px;
+    height: 60px;
+    min-width: 150px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background-color: var(--background-color);
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.avatar-item.active {
+    border: 1px solid rgb(144, 144, 199);
+    box-shadow: 0 0 5px rgb(144, 144, 199);
+}
+
+.avatar-item > img {
+    width: 40px;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+}
+
+.avatar-item > p,.avatar-item > img {
+    pointer-events: none;
+}
+
+.freetime-search {
+    width: 30%;
+    margin-left: auto;
+    margin-right: 20px;
+    height: 40px;
+    font-size: large;
+    color: var(--background-color);
+    border: none;
+    background-color: rgb(144, 144, 199);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+#freebusy-results {
+    flex-grow: 1;
+}
+
+.freebusy-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* カード間の余白 */
+    margin-top: 15px;
+}
+
+.freebusy-card {
+    width: 90%;
+    margin: auto;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px; /* 角丸 */
+    padding: 12px 16px;
+    box-shadow: 0 0px 5px rgb(0, 0, 0,0.2); /* かすかな影 */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.freebusy-date {
+    font-size: 14px;
+    color: #555555; /* 日付は少し落ち着いた色に */
+}
+
+.freebusy-time {
+    font-size: 18px;
+    font-weight: bold; /* 時間は太字で強調 */
+    color: #222222;
+}

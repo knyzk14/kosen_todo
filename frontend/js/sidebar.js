@@ -43,6 +43,7 @@ window.addEventListener('load', () => {
     const active = document.querySelector('.tab.active');
     setTimeout(() => {
         updateBackground(active);
+        active.dispatchEvent(new Event("click"))
     }, 1000);
 });
 

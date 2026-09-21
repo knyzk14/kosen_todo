@@ -90,12 +90,13 @@ sidebar {
 .tab-contents {
     position: relative;
     width: 100%;
+    height: calc(100% - 60px);
 }
 
 .tab-pane {
     display: none;
     opacity: 0;
-    margin: 15px;
+    margin-top: 10px;
 }
 
 .tab-pane.active {

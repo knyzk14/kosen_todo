@@ -28,6 +28,10 @@ def get_free_time(
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+
+    request_data.start_at = request_data.start_at.replace(tzinfo=None)
+    request_data.end_at = request_data.end_at.replace(tzinfo=None)
+
     if request_data.start_at >= request_data.end_at:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="開始日時は終了日時より前である必要があります")
 

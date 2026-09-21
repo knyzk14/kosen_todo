@@ -11,9 +11,9 @@ from datetime import datetime
 
 from database import engine
 import models
-from routers import calendars, events, tags, todos, websocket
+from routers import calendars, events, tags, todos, websocket, freebusy
 
-API_VERSION = "1.6.1"
+API_VERSION = "1.8.1"
 
 # Cloudflareを経由した際の実IPを取得
 def get_real_ip(request: Request):
@@ -75,6 +75,7 @@ app.include_router(events.router)
 app.include_router(tags.router)
 app.include_router(todos.router)
 app.include_router(websocket.router)
+app.include_router(freebusy.router)
 
 # frontendの提供
 app.mount("/", StaticFiles(directory="static", html=True), name="static")

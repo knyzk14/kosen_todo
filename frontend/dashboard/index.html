@@ -114,6 +114,8 @@
                     <textarea id="schedule-title" placeholder="タイトルを入力..."></textarea>
                     <label><input type = "radio" name = "schedule-type"  value="task" id="radio-task">タスク</label>
                     <label><input type = "radio" name = "schedule-type"  value="plan" id="radio-plan">予定</label>
+                    <br><br>
+                    <label><input type = "checkbox" name = "schedule-hidden">予定の内容を公開しない</label>
 
                     <div class="modal-buttons">
                         <button id="schedule-ok">入力</button>
@@ -139,7 +141,6 @@
                     <p>空き時間検索のコンテンツ</p>
                 </div>
                 <div id="TimeScheduleTree-content" class="tab-pane">
- 
                     <!-- ① グループ選択画面 -->
                     <div id="group-select-view" class="group-select-view">
                         <div class="ts-title">
@@ -157,14 +158,12 @@
                         </div>
                         <div id="group-list" class="group-list"></div>
                     </div>
-                
                     <!-- ② グループ詳細画面(上:共有カレンダー / 下:メンバー一覧) -->
                     <div id="group-detail-view" class="group-detail-view">
                         <div class="ts-header">
                             <button id="group-back-btn">◀ 戻る</button>
                             <h4 id="group-detail-title"></h4>
                         </div>
-                
                         <!-- カレンダーを別途で作成 -->
                         <div class="mini-calender">
                             <div class="mini-cal-header">
@@ -194,7 +193,6 @@
                             <div class="group-members" id="group-members"></div>
                         </div>
                     </div>
-                
                     <!-- ③ メンバー詳細画面(その人のカレンダー) -->
                     <div id="member-detail-view" class="member-detail-view" style="display:none;">
                         <div class="ts-header">
@@ -236,15 +234,11 @@
                             <button id="group-add-back-btn">◀ 戻る</button>
                             <h4 id="group-add-title">新規追加</h4>
                         </div>
-                    
                         <p id="group-add-note" class="group-add-note">新規追加する人を以下から選んでください</p>
-                    
                         <!-- 共有カレンダーの名前。グループ選択の一覧に名前が必要なので置いた -->
                         <input type="text" id="group-add-name" placeholder="グループ名を入力...">
-                    
                         <!-- 人の一覧(JSが作る。多いとスクロール) -->
                         <div id="group-add-list" class="group-members"></div>
-                    
                         <button id="group-add-submit">追加</button>
                     </div>
                 </div><!-- /#TimeScheduleTree-content -->

@@ -276,13 +276,10 @@ main {
 .modal{
     display: none;
     position: fixed;
-
     top: 0;
     left: 0;
-
     justify-content: center;
     align-items: center;
-
     z-index: 3;
 }
 
@@ -329,7 +326,13 @@ main {
     border: 1px solid var(--mute-text-color);
     padding: 0 10px;
     outline: none;
-    font-size:19px;
+    font-size:15px;
+}
+
+.modal-content label {
+    display: inline-block;
+    margin: 3px;
+    margin-left: 0;
 }
 
 #schedule-title{

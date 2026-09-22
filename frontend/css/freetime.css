@@ -1,122 +1,272 @@
+
+/* ================================================================
+   フリータイム検索タブ (#freetime-content)
+   ================================================================ */
+
 #freetime-content.active {
-    position: relative;
+    padding: 14px 4px 4px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    height: 100%;
+    gap: 18px;
 }
 
-#freetime-content > hr {
-    width: 40%;
-    height: 1px;
-    outline: none;
-    border-top: 1px solid var(--text-color-disabled);
-    box-sizing: border-box;
-}
-
+/* ---- 日時入力 ---- */
 .freetime-input {
     display: flex;
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
+    align-items: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, #f7f9fc, #eef2f7);
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #e6e9ee;
 }
 
-.freetime-input > input {
-    width: 30%;
-    height: 40px;
-    padding: 10px;
+.freetime-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.freetime-field label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #9199a3;
+    text-transform: uppercase;
+}
+
+.freetime-field input[type="datetime-local"] {
+    width: 100%;
     box-sizing: border-box;
-    border: none;
-    border-radius: 10px;
+    padding: 6px 8px;
+    border: 1px solid #dfe3e8;
+    border-radius: 7px;
+    font-size: 12px;
+    background: var(--background-color, #fff);
+    color: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.freetime-field input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+}
+
+.freetime-tilde {
+    padding-bottom: 9px;
+    color: #b3b9c1;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+/* ---- メンバー選択 ---- */
+.freetime-section-title {
+    margin: 0 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #9199a3;
+    text-transform: uppercase;
 }
 
 .members {
     display: flex;
-    height: 80px;
-    width: 90%;
-    margin-left: 5%;
-    gap:10px;
-    padding: 5px;
-    overflow-x: auto;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 2px;
 }
 
-.avatar-item {
+.members::-webkit-scrollbar {
+    width: 5px;
+}
+.members::-webkit-scrollbar-thumb {
+    background: #dfe3e8;
+    border-radius: 3px;
+}
+
+.freetime-member-item {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 10px;
-    width: 100px;
-    height: 60px;
-    min-width: 150px;
-    box-sizing: border-box;
-    border-radius: 10px;
-    background-color: var(--background-color);
-    margin-bottom: 10px;
+    gap: 9px;
+    padding: 7px 10px;
+    border: 1px solid #edf0f3;
+    border-radius: 8px;
+    background: var(--background-color, #fff);
+    font-size: 20px;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
 }
 
-.avatar-item.active {
-    border: 1px solid rgb(144, 144, 199);
-    box-shadow: 0 0 5px rgb(144, 144, 199);
-}
-
-.avatar-item > img {
-    width: 40px;
-    height: auto;
-    aspect-ratio: 1 / 1;
+.freetime-member-item img {
+    width: 48px;           /* ← アイコンを小さく */
+    height: 48px;
+    object-fit: cover;
+    flex-shrink: 0;
     border-radius: 50%;
 }
 
-.avatar-item > p,.avatar-item > img {
-    pointer-events: none;
+.freetime-member-item:hover {
+    background: #f7f9fc;
+    transform: translateX(2px);
 }
 
-.freetime-search {
-    width: 30%;
-    margin-left: auto;
-    margin-right: 20px;
-    height: 40px;
-    font-size: large;
-    color: var(--background-color);
-    border: none;
-    background-color: rgb(144, 144, 199);
-    border-radius: 10px;
+.freetime-member-item:has(.freetime-member-check:checked) {
+    border-color: #4a90e2;
+    background: #eef5fd;
+    box-shadow: 0 1px 4px rgba(74, 144, 226, 0.15);
+}
+
+.freetime-member-check {
+    accent-color: #4a90e2;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
-#freebusy-results {
-    flex-grow: 1;
+.freetime-member-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.freebusy-result-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* カード間の余白 */
-    margin-top: 15px;
-}
-
-.freebusy-card {
-    width: 90%;
-    margin: auto;
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px; /* 角丸 */
-    padding: 12px 16px;
-    box-shadow: 0 0px 5px rgb(0, 0, 0,0.2); /* かすかな影 */
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.freebusy-date {
+/* ---- 検索ボタン ---- */
+.freetime-search {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #5b9df0, #3a7bc8);
+    color: #fff;
     font-size: 14px;
-    color: #555555; /* 日付は少し落ち着いた色に */
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    box-shadow: 0 2px 8px rgba(74, 144, 226, 0.35);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.15s ease;
 }
 
-.freebusy-time {
-    font-size: 18px;
-    font-weight: bold; /* 時間は太字で強調 */
-    color: #222222;
+.freetime-search:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.45);
+}
+
+.freetime-search:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.freetime-search:disabled {
+    opacity: 0.65;
+    cursor: default;
+    box-shadow: none;
+}
+
+.freetime-search-icon {
+    font-size: 13px;
+}
+
+.freetime-divider {
+    border: none;
+    border-top: 1px dashed #e2e6eb;
+    margin: 0;
+}
+
+/* ---- 結果表示 ---- */
+#freebusy-results {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+#freebusy-results::-webkit-scrollbar {
+    width: 5px;
+}
+#freebusy-results::-webkit-scrollbar-thumb {
+    background: #dfe3e8;
+    border-radius: 3px;
+}
+
+.freetime-result-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    border: 1px solid transparent;
+    border-left: 3px solid transparent;
+    animation: ftFadeIn 0.25s ease both;
+}
+
+@keyframes ftFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.freetime-result-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 3px currentColor;
+    opacity: 0.9;
+}
+
+.freetime-result-time {
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+}
+
+.freetime-result-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #9199a3;
+    white-space: nowrap;
+}
+
+.freetime-result-free {
+    background: #f1faf3;
+    border-left-color: #4caf50;
+}
+.freetime-result-free .freetime-result-dot {
+    background: #4caf50;
+    color: rgba(76, 175, 80, 0.18);
+}
+
+.freetime-result-busy {
+    background: #fdf4f3;
+    border-left-color: #d9534f;
+}
+.freetime-result-busy .freetime-result-dot {
+    background: #d9534f;
+    color: rgba(217, 83, 79, 0.18);
+}
+
+/* ---- サイドバーが狭いときの調整 ---- */
+@container sidebar (max-width: 280px) {
+    .freetime-field label {
+        font-size: 9.5px;
+    }
+    .freetime-field input[type="datetime-local"],
+    .freetime-member-name,
+    .freetime-result-time {
+        font-size: 11px;
+    }
+    .freetime-search {
+        font-size: 13px;
+    }
 }

@@ -13,7 +13,7 @@ export function renderFreeBusyMembers(members) {
 
     members.forEach(member => {
         const item = document.createElement("div");
-        item.classList.add("avatar-item");
+        item.classList.add("freetime-member-item");
         item.dataset.id = member.username;
         
         if (auth.currentUser && auth.currentUser.email.startsWith(member.username)) {
@@ -25,10 +25,16 @@ export function renderFreeBusyMembers(members) {
         img.alt = member.username;
         img.onerror = () => { img.src = '/res/img/link.png'; };
 
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.classList.add("freetime-member-check");
+
         const span = document.createElement("span");
+        span.classList.add("freetime-member-name");
         span.textContent = member.display_name || member.username;
 
-        item.appendChild(img);
+        item.appendChild(checkbox);
+        item.appendChild(img); 
         item.appendChild(span);
         container.appendChild(item);
     });
@@ -60,18 +66,23 @@ export function setupFreeBusy(apiBaseUrl) {
         endTimeInput.value = tomorrowFormatted;
     }
 
-    if (container) {
-        container.addEventListener("click", function(event) {
-            const item = event.target.closest(".avatar-item");
-            if (!item) return;
-            item.classList.toggle("active");
-        });
-    }
+    // if (container) {
+    //     container.addEventListener("click", function(event) {
+    //         const item = event.target.closest(".freetime-member-item");
+    //         if (!item) return;
+    //         item.classList.toggle("active");
+    //     });
+    // }
 
     if (btnSearch) {
         btnSearch.addEventListener("click", async function() {
-            const activeItems = container.querySelectorAll(".avatar-item.active");
-            const selectedUsernames = Array.from(activeItems).map(item => item.dataset.id);
+            
+            const activeItems = container.querySelectorAll(
+                ".freetime-member-item:has(.freetime-member-check:checked)"
+            );
+
+            const selectedUsernames = Array.from(activeItems)
+                .map(item => item.dataset.id);
 
             if (selectedUsernames.length === 0) {
                 alert("検索対象のユーザーを選択してください。");
@@ -140,11 +151,13 @@ function renderFreeBusyResults(freeSlots, container) {
         const endStr = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
         
         html += `
-            <div class="freebusy-card">
-                <div class="freebusy-date">${month}/${date} (${dayOfWeek})</div>
-                <div class="freebusy-time">${startStr} - ${endStr}</div>
+            <div class="freetime-result-item freetime-result-free">
+                <div class="freetime-result-dot"></div>
+                <div class="freetime-result-time">
+                    ${month}/${date} (${dayOfWeek}) ${startStr} - ${endStr}
+                </div>
             </div>
-        `;
+`;
     });
     
     html += '</div>';

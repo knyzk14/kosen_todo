@@ -24,6 +24,7 @@
         <script src="/js/auth-guard.js" type="module"></script>
         <script src="/js/sidebar.js" type="module"></script>
         <script src="/js/dashboard.js" type="module"></script>
+        <script src="/js/freetime.js" type="module"></script>
     </head>
     <body>
         <div class="main-container">
@@ -140,15 +141,33 @@
                 </div>
                 <div id="freetime-content" class="tab-pane">
                     <div class="freetime-input">
-                        <input type="datetime-local" id="freetime-start">
-                        <span>～</span>
-                        <input type="datetime-local" id="freetime-end">
+                        <div class="freetime-field">
+                            <label for="freetime-start">開始</label>
+                            <input type="datetime-local" id="freetime-start">
+                        </div>
+                        <span class="freetime-tilde">～</span>
+                        <div class="freetime-field">
+                            <label for="freetime-end">終了</label>
+                            <input type="datetime-local" id="freetime-end">
+                        </div>
                     </div>
-                    <div class="members">
+
+                    <div class="freetime-members-section">
+                        <h4 class="freetime-section-title">対象メンバー</h4>
+                        <div class="members">
+                            
+                        </div>
                     </div>
-                    <button class="freetime-search">検索</button>
-                    <hr>
-                    <div id="freebusy-results"></div>
+
+                    <button class="freetime-search">
+                        <span class="freetime-search-icon">🔍</span>空き時間を検索
+                    </button>
+
+                    <hr class="freetime-divider">
+
+                    <div id="freebusy-results">
+                        
+                    </div>
                 </div>
                 <div id="TimeScheduleTree-content" class="tab-pane">
                     <!-- ① グループ選択画面 -->

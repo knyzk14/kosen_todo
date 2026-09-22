@@ -117,6 +117,10 @@ async function fetchCalendars() {
         if(res.ok) {
             apiCalendars = await res.json();
             renderGroupList();
+            const defaultCal = apiCalendars.find(c => c.is_default);
+        if (defaultCal) {
+                document.dispatchEvent(new CustomEvent('calendar-switched',{detail : defaultCal}));
+            }
         }
     } catch(e) {
         console.error("カレンダーの取得に失敗:", e);
@@ -164,6 +168,7 @@ function renderGroupList() {
                 if (typeof window.switchCalendar === 'function') {
                     window.switchCalendar(cal.id);
                 }
+                document.dispatchEvent(new CustomEvent('calendar-switched', { detail: cal }));
             } else {
                 if(!isDefault) { // デフォルトは操作不可
                     const check = title.querySelector('.group-check');

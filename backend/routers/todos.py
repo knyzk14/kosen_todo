@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List, Dict
@@ -193,6 +194,8 @@ def delete_todo(
 
 @router.get("", response_model=List[TodoResponse])
 def get_all_todos(
+    due_before: Optional[datetime] = Query(None, description="指定した日時以前の期限のToDoのみ取得"),
+    include_no_due: bool = Query(True, description="期限なしのToDoを含めるか"),
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -200,15 +203,34 @@ def get_all_todos(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ユーザーが見つかりません")
 
-    # 自分がオーナーのカレンダーと、共有されているカレンダーのIDをすべて取得
     calendar_ids = {cal.id for cal in user.owned_calendars} | {cal.id for cal in user.shared_calendars}
 
     if not calendar_ids:
         return []
 
-    todos = db.query(models.Todo).filter(models.Todo.calendar_id.in_(calendar_ids)).all()
+    # タイムゾーン情報を削除してDBと型を合わせる
+    if due_before:
+        due_before = due_before.replace(tzinfo=None)
 
-    # 期日 (due_date) が近い順にソート。期日未設定(None)は末尾に配置
+    # クエリのベースを作成
+    query = db.query(models.Todo).filter(models.Todo.calendar_id.in_(calendar_ids))
+
+    # --- フィルタリングの適用 ---
+    if due_before is not None:
+        if include_no_due:
+            # 期限が指定日時より前、または期限なし
+            query = query.filter(or_(models.Todo.due_date <= due_before, models.Todo.due_date.is_(None)))
+        else:
+            # 期限が指定日時より前のみ（期限なしは除外）
+            query = query.filter(models.Todo.due_date <= due_before)
+    else:
+        if not include_no_due:
+            # 期限指定はないが、期限なしは除外する
+            query = query.filter(models.Todo.due_date.is_not(None))
+
+    todos = query.all()
+
+    # 期日が近い順にソート（Noneは末尾へ）
     todos_sorted = sorted(
         todos,
         key=lambda x: (x.due_date is None, x.due_date)
@@ -217,7 +239,7 @@ def get_all_todos(
     todos_res = []
     for td in todos_sorted:
         calendar = td.calendar
-        # 作成者でもなく、カレンダーオーナーでもない場合はマスキング
+        # マスキング判定
         if td.is_private and td.creator_id != user_id and calendar.owner_id != user_id:
             todos_res.append({
                 "id": td.id,

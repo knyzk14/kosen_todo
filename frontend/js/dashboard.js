@@ -400,7 +400,6 @@ async function handleDeleteSchedule() {
 
 // --- 1日表示 (Day View) ---
 function openDayView() {
-    restoreDayViewTOPopup();
     if (dayViewTitle) dayViewTitle.textContent = `${selectedMonth + 1}月${selectedDay}日の予定`;
     renderDayview();
     if (dayViewModal) dayViewModal.style.display = "flex";
@@ -563,50 +562,8 @@ function renderDayview() {
 
 if (dayViewClose) dayViewClose.addEventListener("click", closeDayView);
 
-// --- サイドバー埋め込みロジック (独自実装の維持) ---
-window.openTodayDayView = function() {
-    if (scheduleOpen) return;
-    const now = new Date();
-    selectedYear = now.getFullYear();
-    selectedMonth = now.getMonth();
-    selectedDay = now.getDate();
-    selectedDayElement = null;
-
-    embedDayViewInSidebar();
-    if (dayViewModal) dayViewModal.style.display = "block";
-    if (dayViewTitle) dayViewTitle.textContent = `${selectedMonth + 1}月${selectedDay}日の予定`;
-    renderDayview();
-}
-
-const dayViewOriginalParent = dayViewModal?.parentNode;
-const dayViewOriginalNextSibling = dayViewModal?.nextSibling;
-const sidebarDayViewSlot = document.querySelector("#sidebar-day-view-slot");
-let dayViewEmbedded = false;
-
-function embedDayViewInSidebar() {
-    if (dayViewEmbedded || !sidebarDayViewSlot || !dayViewModal) return;
-    sidebarDayViewSlot.appendChild(dayViewModal);
-    dayViewModal.classList.add("day-view-embedded");
-    dayViewEmbedded = true;
-}
-
-function restoreDayViewTOPopup() {
-    if (!dayViewEmbedded || !dayViewModal) return;
-    dayViewModal.classList.remove("day-view-embedded");
-    dayViewModal.classList.add("modal", "day-view-popup");
-    dayViewModal.style.display = "none";
-
-    if (dayViewOriginalNextSibling && dayViewOriginalNextSibling.parentNode === dayViewOriginalParent) {
-        dayViewOriginalParent.insertBefore(dayViewModal, dayViewOriginalNextSibling);
-    } else if (dayViewOriginalParent) {
-        dayViewOriginalParent.appendChild(dayViewModal);
-    }
-    dayViewEmbedded = false;
-}
-
 if (dayViewModal) {
     dayViewModal.addEventListener("click", function(event) {
-        if (dayViewEmbedded) return;
         if (event.target === dayViewModal) {
             closeDayView();
             modal.style.display = "none";

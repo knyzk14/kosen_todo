@@ -1,3 +1,4 @@
+import { setupTodoTab } from './todo.js';
 import { auth } from './firebase-init.js';
 
 const background = document.querySelector('.tab-background');
@@ -31,11 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            if (targetId === 'todo-content'){
-                if(typeof window.openTodayDayView === 'function'){
-                    window.openTodayDayView();
-                }
-            }
         });
     });
 });
@@ -45,6 +41,9 @@ window.addEventListener('load', () => {
     setTimeout(() => {
         updateBackground(active);
         active.dispatchEvent(new Event("click"))
+        
+        // ToDoタブの初期化
+        setupTodoTab(API_BASE_URL, 'todo-content');
     }, 1000);
 });
 
@@ -397,19 +396,25 @@ document.getElementById('group-mode-submit').addEventListener('click', async () 
 fetchCalendars();
 showView(group_select_view);
 
+
 // ================================================================
 // ログアウト機能
 // ================================================================
 const userMoreContainer = document.querySelector('.user-more');
 if (userMoreContainer) {
     let logoutBtn = userMoreContainer.querySelector('.logout-btn');
+    if (!logoutBtn) {
+        logoutBtn = document.createElement('button');
+        logoutBtn.textContent = 'ログアウト';
+        logoutBtn.className = 'logout-btn';
+        userMoreContainer.appendChild(logoutBtn);
+    }
     
-    // イベントリスナーの登録
     logoutBtn.addEventListener('click', async () => {
         if (confirm('ログアウトしますか？')) {
             try {
                 await auth.signOut();
-                window.location.href = '/login.html'; // ログイン画面へ
+                window.location.href = '/login.html';
             } catch (error) {
                 console.error('ログアウトエラー:', error);
                 alert('ログアウトに失敗しました');
@@ -418,9 +423,9 @@ if (userMoreContainer) {
     });
 
     const profileEl = document.querySelector('.profile');
-    if (profileEl) {
+    if (profileEl && logoutBtn) {
         profileEl.addEventListener('click', () => {
-            // プロフィールがクリックされたらクラスを付け外しする
+            // プロフィールがクリックされたらログアウトボタンの表示状態をトグルする
             userMoreContainer.classList.toggle('show-logout');
         });
     }

@@ -204,3 +204,14 @@
 .slide-in-prev {
     animation: slideInLeft 0.2s forwards;
 }
+
+/*----------*/
+
+h2.current-calendar-name {
+    display: block;
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 30px 0;
+    color: var(--text-color, #333);
+    text-align: center;
+}

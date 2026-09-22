@@ -423,10 +423,10 @@ sidebar {
 }
  
 #group-add-list {
-    max-height: 300px;      /* 人が多いとここでスクロール */
+    max-height: 300px;
 }
  
-/* 選ばれている人(クリックで付く / もう一度クリックで外れる) */
+
 .group-member-item.selected {
     border-color: #4a90e2;
     background: #eaf2ff;
@@ -481,9 +481,9 @@ sidebar {
     background: rgba(255, 255, 255, 0.2);
 }
  
-/* 修正・削除モードのバー(説明文 + キャンセル + 削除) */
+
 .group-mode-bar {
-    align-items: center;          /* display は JS が none / flex を切り替える */
+    align-items: center;
     gap: 8px;
     margin-bottom: 10px;
     font-size: 12px;
@@ -508,21 +508,18 @@ sidebar {
     background: #d9534f;
     color: #fff;
 }
- 
-/* チェックボックス
-   クリックは「グループ名の行」全体で受けるので、ボックス自身はクリックを受けない
-   (受けると、ボックスと行で2回切り替わってしまう) */
+
 .group-check {
     margin-right: 8px;
     pointer-events: none;
 }
  
-/* グループ名を左に広げる(チェックボックスの有無で位置がずれないように) */
+
 .group-block-title span {
     flex: 1;
 }
  
-/* モード中は「▶」の目印を消す(押すと開くのではなく、チェックするため) */
+
 .group-block-title:has(.group-check)::after {
     content: none;
 }
@@ -532,4 +529,48 @@ sidebar {
 #sidebar-day-view-slot {
     width: 95%;
     margin: auto;
+}
+
+.user-more {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    width: 250px;
+}
+
+.profile {
+    position: relative;
+    width: 100%;
+    bottom: auto;
+    left: auto;
+    z-index: 2;
+}
+
+.logout-btn {
+    position: absolute;
+    bottom: 0; 
+    left: 13px;
+    width: 100%;
+    padding: 12px;
+    background-color: #ff4d4f;
+    margin: auto;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1; /* プロフィールの裏 */
+    opacity: 0;
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logout-btn:hover {
+    background-color: #d9363e;
+}
+
+.user-more.show-logout .logout-btn {
+    opacity: 1;
+    transform: translateY(-190%);
 }

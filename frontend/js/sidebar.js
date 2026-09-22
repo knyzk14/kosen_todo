@@ -396,3 +396,32 @@ document.getElementById('group-mode-submit').addEventListener('click', async () 
 // 初期読み込み
 fetchCalendars();
 showView(group_select_view);
+
+// ================================================================
+// ログアウト機能
+// ================================================================
+const userMoreContainer = document.querySelector('.user-more');
+if (userMoreContainer) {
+    let logoutBtn = userMoreContainer.querySelector('.logout-btn');
+    
+    // イベントリスナーの登録
+    logoutBtn.addEventListener('click', async () => {
+        if (confirm('ログアウトしますか？')) {
+            try {
+                await auth.signOut();
+                window.location.href = '/login.html'; // ログイン画面へ
+            } catch (error) {
+                console.error('ログアウトエラー:', error);
+                alert('ログアウトに失敗しました');
+            }
+        }
+    });
+
+    const profileEl = document.querySelector('.profile');
+    if (profileEl) {
+        profileEl.addEventListener('click', () => {
+            // プロフィールがクリックされたらクラスを付け外しする
+            userMoreContainer.classList.toggle('show-logout');
+        });
+    }
+}

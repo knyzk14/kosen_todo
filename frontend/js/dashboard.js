@@ -2,7 +2,8 @@ import { DefaultCalendarId } from './preload.js';
 import { auth } from './firebase-init.js';
 import { renderFreeBusyMembers, setupFreeBusy } from './freebusy.js';
 
-let activeCalendarId = DefaultCalendarId;
+let activeCalendarId = localStorage.getItem('activeCalendarId') || DefaultCalendarId;
+// もしlocalStorageから取れたIDを使う場合でも、後で初期化を確実に行う
 let currentCalendarMembers = []; // ★修正: 変数宣言を追加
 
 const today = new Date();
@@ -47,6 +48,24 @@ async function fetchCalendarMembers() {
         if (targetCalendar) {
             currentCalendarMembers = [targetCalendar.owner, ...targetCalendar.members];
             renderFreeBusyMembers(currentCalendarMembers); 
+
+            // ★ カレンダー名を画面に表示するUI改善
+            let titleEl = document.querySelector("#current-calendar-name");
+            if (!titleEl) {
+                const header = document.querySelector(".overview");
+                titleEl = document.createElement("h2");
+                titleEl.id = "current-calendar-name";
+                titleEl.className = "current-calendar-name";
+                if (header) {
+                    header.insertBefore(titleEl, header.firstChild);
+                    header.insertBefore(document.createElement("hr"), header.firstChild);
+                }
+            }
+            if (titleEl) {
+                titleEl.textContent = targetCalendar.is_default 
+                    ? `⭐ ${targetCalendar.title}` 
+                    : targetCalendar.title;
+            } 
         }
     } catch (e) {
         console.error("メンバー情報の取得に失敗:", e);
@@ -56,6 +75,7 @@ async function fetchCalendarMembers() {
 // --- カレンダーデータ取得 ---
 async function loadDataFromAPI() {
     if (!activeCalendarId) return;
+    const omuid = auth.currentUser ? auth.currentUser.email.split('@')[0] : '';
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/calendars/${activeCalendarId}/data`);
@@ -104,7 +124,8 @@ async function loadDataFromAPI() {
             data[year][month][day][timeStr] = {
                 id: todo.id,
                 title: todo.title,
-                type: "task"
+                type: "task",
+                completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false
             };
         });
     } catch (e) {
@@ -423,7 +444,7 @@ function renderDayview() {
             let start = timeToMinutes(startStr);
             let end = timeToMinutes(endStr);
             if (end <= start) end = start + 30;
-            return { time, startStr, endStr, start, end, title: info.title, type: info.type || "plan", id: info.id };
+            return { time, startStr, endStr, start, end, title: info.title, type: info.type || "plan", id: info.id, completed: info.completed };
         });
 
         entries.sort((a, b) => a.start - b.start);
@@ -446,12 +467,67 @@ function renderDayview() {
             timeEl.classList.add("day-view-event-time");
             timeEl.textContent = `${entry.startStr} - ${entry.endStr}`;
 
+            const titleContainer = document.createElement("div");
+            titleContainer.style.display = "flex";
+            titleContainer.style.alignItems = "center";
+            titleContainer.style.gap = "4px";
+            titleContainer.style.overflow = "hidden"; // テキストのはみ出し防止
+
             const titleEl = document.createElement("span");
             titleEl.classList.add("day-view-event-title");
             titleEl.textContent = entry.title;
 
+            if (entry.type === "task") {
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = entry.completed;
+                checkbox.style.margin = "0";
+                checkbox.style.cursor = "pointer";
+                checkbox.style.flexShrink = "0"; // チェックボックスが潰れないようにする
+
+                if (entry.completed) {
+                    titleEl.style.textDecoration = "line-through";
+                    titleEl.style.opacity = "0.5";
+                }
+
+                checkbox.addEventListener("click", async (e) => {
+                    e.stopPropagation();
+                    const newStatus = e.target.checked;
+                    const omuid = auth.currentUser ? auth.currentUser.email.split('@')[0] : '';
+
+                    titleEl.style.textDecoration = newStatus ? "line-through" : "none";
+                    titleEl.style.opacity = newStatus ? "0.5" : "1";
+
+                    try {
+                        await fetch(`${API_BASE_URL}/api/todos/${entry.id}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                assignments: {
+                                    [omuid]: { assigned: true, completed: newStatus }
+                                }
+                            })
+                        });
+                        
+                        const targetDay = data[selectedYear]?.[selectedMonth + 1]?.[selectedDay];
+                        if (targetDay && targetDay[entry.time]) {
+                            targetDay[entry.time].completed = newStatus;
+                        }
+                    } catch (err) {
+                        console.error("完了状態の更新に失敗", err);
+                        alert("完了状態の更新に失敗しました");
+                        e.target.checked = !newStatus;
+                        titleEl.style.textDecoration = !newStatus ? "line-through" : "none";
+                        titleEl.style.opacity = !newStatus ? "0.5" : "1";
+                    }
+                });
+                titleContainer.appendChild(checkbox);
+            }
+
+            titleContainer.appendChild(titleEl);
+
             eventEl.appendChild(timeEl);
-            eventEl.appendChild(titleEl);
+            eventEl.appendChild(titleContainer);
             dayViewEvents.appendChild(eventEl);
 
             eventEl.addEventListener("click", function() {
@@ -862,6 +938,7 @@ window.switchCalendar = async function(newCalendarId) {
 
     try {
         activeCalendarId = newCalendarId;
+        localStorage.setItem('activeCalendarId', activeCalendarId); // ★現在開いているIDを保存
         await fetchCalendarMembers(); // ★修正: カレンダー切り替え時にメンバー一覧も再取得
         await loadDataFromAPI();
 

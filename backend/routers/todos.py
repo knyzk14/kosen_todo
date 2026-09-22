@@ -182,3 +182,55 @@ def delete_todo(
     )
 
     return
+
+@router.get("", response_model=List[TodoResponse])
+def get_all_todos(
+    user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ユーザーが見つかりません")
+
+    # 自分がオーナーのカレンダーと、共有されているカレンダーのIDをすべて取得
+    calendar_ids = {cal.id for cal in user.owned_calendars} | {cal.id for cal in user.shared_calendars}
+
+    if not calendar_ids:
+        return []
+
+    todos = db.query(models.Todo).filter(models.Todo.calendar_id.in_(calendar_ids)).all()
+
+    # 期日 (due_date) が近い順にソート。期日未設定(None)は末尾に配置
+    todos_sorted = sorted(
+        todos,
+        key=lambda x: (x.due_date is None, x.due_date)
+    )
+
+    todos_res = []
+    for td in todos_sorted:
+        calendar = td.calendar
+        # 作成者でもなく、カレンダーオーナーでもない場合はマスキング
+        if td.is_private and td.creator_id != user_id and calendar.owner_id != user_id:
+            todos_res.append({
+                "id": td.id,
+                "calendar_id": td.calendar_id,
+                "title": "予定あり",
+                "due_date": td.due_date,
+                "assignments": td.assignments,
+                "tag_ids": [t.id for t in td.tags],
+                "creator_id": td.creator_id,
+                "is_private": True
+            })
+        else:
+            todos_res.append({
+                "id": td.id,
+                "calendar_id": td.calendar_id,
+                "title": td.title,
+                "due_date": td.due_date,
+                "assignments": td.assignments,
+                "tag_ids": [t.id for t in td.tags],
+                "creator_id": td.creator_id,
+                "is_private": td.is_private
+            })
+
+    return todos_res

@@ -49,7 +49,15 @@ export async function syncClassroomTasks(apiBaseUrl, accessToken) {
 
 export async function fetchAllTodos(apiBaseUrl) {
     try {
-        const res = await fetch(`${apiBaseUrl}/api/todos`);
+        const now = new Date();
+        const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+        const twoWeeksLater = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+        
+        const dueAfter = threeDaysAgo.toISOString();
+        const dueBefore = twoWeeksLater.toISOString();
+        
+        const url = `${apiBaseUrl}/api/todos?due_after=${dueAfter}&due_before=${dueBefore}&include_no_due=false`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error("ToDoの取得に失敗しました");
         const todos = await res.json();
         return todos;

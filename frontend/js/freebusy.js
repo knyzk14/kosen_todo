@@ -83,8 +83,13 @@ export function setupFreeBusy(apiBaseUrl) {
                 return;
             }
 
-            const startAt = new Date(startTimeInput.value).toISOString();
-            const endAt = new Date(endTimeInput.value).toISOString();
+            const toLocalISOString = (date) => {
+                const tzOffset = date.getTimezoneOffset() * 60000;
+                return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1); // Zを削除し、ローカル時刻のままAPIへ
+            };
+
+            const startAt = toLocalISOString(new Date(startTimeInput.value));
+            const endAt = toLocalISOString(new Date(endTimeInput.value));
 
             if (new Date(startAt) >= new Date(endAt)) {
                 alert("終了日時は開始日時より後に設定してください。");

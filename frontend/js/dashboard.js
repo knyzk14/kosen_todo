@@ -2,7 +2,8 @@ import { DefaultCalendarId } from './preload.js';
 import { auth } from './firebase-init.js';
 import { renderFreeBusyMembers, setupFreeBusy } from './freebusy.js';
 
-let activeCalendarId = DefaultCalendarId;
+let activeCalendarId = localStorage.getItem('activeCalendarId') || DefaultCalendarId;
+// もしlocalStorageから取れたIDを使う場合でも、後で初期化を確実に行う
 let currentCalendarMembers = []; // ★修正: 変数宣言を追加
 
 const today = new Date();
@@ -47,6 +48,24 @@ async function fetchCalendarMembers() {
         if (targetCalendar) {
             currentCalendarMembers = [targetCalendar.owner, ...targetCalendar.members];
             renderFreeBusyMembers(currentCalendarMembers); 
+
+            // ★ カレンダー名を画面に表示するUI改善
+            let titleEl = document.querySelector("#current-calendar-name");
+            if (!titleEl) {
+                const header = document.querySelector(".overview");
+                titleEl = document.createElement("h2");
+                titleEl.id = "current-calendar-name";
+                titleEl.className = "current-calendar-name";
+                if (header) {
+                    header.insertBefore(titleEl,header.firstChild);
+                    header.insertBefore(document.createElement("hr"),header.firstChild);
+                }
+            }
+            if (titleEl) {
+                titleEl.textContent = targetCalendar.is_default 
+                    ? `⭐ ${targetCalendar.title}` 
+                    : targetCalendar.title;
+            } 
         }
     } catch (e) {
         console.error("メンバー情報の取得に失敗:", e);
@@ -862,6 +881,7 @@ window.switchCalendar = async function(newCalendarId) {
 
     try {
         activeCalendarId = newCalendarId;
+        localStorage.setItem('activeCalendarId', activeCalendarId); // ★現在開いているIDを保存
         await fetchCalendarMembers(); // ★修正: カレンダー切り替え時にメンバー一覧も再取得
         await loadDataFromAPI();
 

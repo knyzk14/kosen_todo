@@ -125,7 +125,9 @@ async function loadDataFromAPI() {
                 id: todo.id,
                 title: todo.title,
                 type: "task",
-                completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false
+                completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false,
+                source: todo.source,
+                external_id: todo.external_id
             };
         });
     } catch (e) {
@@ -443,7 +445,7 @@ function renderDayview() {
             let start = timeToMinutes(startStr);
             let end = timeToMinutes(endStr);
             if (end <= start) end = start + 30;
-            return { time, startStr, endStr, start, end, title: info.title, type: info.type || "plan", id: info.id, completed: info.completed };
+            return { time, startStr, endStr, start, end, title: info.title, type: info.type || "plan", id: info.id, completed: info.completed, source: info.source, external_id: info.external_id };
         });
 
         entries.sort((a, b) => a.start - b.start);
@@ -477,50 +479,64 @@ function renderDayview() {
             titleEl.textContent = entry.title;
 
             if (entry.type === "task") {
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.checked = entry.completed;
-                checkbox.style.margin = "0";
-                checkbox.style.cursor = "pointer";
-                checkbox.style.flexShrink = "0"; // チェックボックスが潰れないようにする
-
                 if (entry.completed) {
                     titleEl.style.textDecoration = "line-through";
                     titleEl.style.opacity = "0.5";
                 }
 
-                checkbox.addEventListener("click", async (e) => {
-                    e.stopPropagation();
-                    const newStatus = e.target.checked;
-                    const omuid = auth.currentUser ? auth.currentUser.email.split('@')[0] : '';
+                if (entry.source === "classroom") {
+                    // Classroomの場合はチェックボックスではなくアイコン/リンクを表示
+                    const classLink = document.createElement("a");
+                    classLink.href = "https://classroom.google.com/";
+                    classLink.target = "_blank";
+                    classLink.textContent = "🏫";
+                    classLink.style.textDecoration = "none";
+                    classLink.style.fontSize = "12px";
+                    classLink.style.marginRight = "4px";
+                    classLink.title = "Classroomで提出してください";
+                    classLink.addEventListener("click", (e) => e.stopPropagation()); // モーダル開くのを防ぐ
+                    titleContainer.appendChild(classLink);
+                } else {
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.checked = entry.completed;
+                    checkbox.style.margin = "0";
+                    checkbox.style.cursor = "pointer";
+                    checkbox.style.flexShrink = "0"; // チェックボックスが潰れないようにする
 
-                    titleEl.style.textDecoration = newStatus ? "line-through" : "none";
-                    titleEl.style.opacity = newStatus ? "0.5" : "1";
+                    checkbox.addEventListener("click", async (e) => {
+                        e.stopPropagation();
+                        const newStatus = e.target.checked;
+                        const omuid = auth.currentUser ? auth.currentUser.email.split('@')[0] : '';
 
-                    try {
-                        await fetch(`${API_BASE_URL}/api/todos/${entry.id}`, {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                assignments: {
-                                    [omuid]: { assigned: true, completed: newStatus }
-                                }
-                            })
-                        });
-                        
-                        const targetDay = data[selectedYear]?.[selectedMonth + 1]?.[selectedDay];
-                        if (targetDay && targetDay[entry.time]) {
-                            targetDay[entry.time].completed = newStatus;
+                        titleEl.style.textDecoration = newStatus ? "line-through" : "none";
+                        titleEl.style.opacity = newStatus ? "0.5" : "1";
+
+                        try {
+                            await fetch(`${API_BASE_URL}/api/todos/${entry.id}`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    assignments: {
+                                        [omuid]: { assigned: true, completed: newStatus }
+                                    }
+                                })
+                            });
+                            
+                            const targetDay = data[selectedYear]?.[selectedMonth + 1]?.[selectedDay];
+                            if (targetDay && targetDay[entry.time]) {
+                                targetDay[entry.time].completed = newStatus;
+                            }
+                        } catch (err) {
+                            console.error("完了状態の更新に失敗", err);
+                            alert("完了状態の更新に失敗しました");
+                            e.target.checked = !newStatus;
+                            titleEl.style.textDecoration = !newStatus ? "line-through" : "none";
+                            titleEl.style.opacity = !newStatus ? "0.5" : "1";
                         }
-                    } catch (err) {
-                        console.error("完了状態の更新に失敗", err);
-                        alert("完了状態の更新に失敗しました");
-                        e.target.checked = !newStatus;
-                        titleEl.style.textDecoration = !newStatus ? "line-through" : "none";
-                        titleEl.style.opacity = !newStatus ? "0.5" : "1";
-                    }
-                });
-                titleContainer.appendChild(checkbox);
+                    });
+                    titleContainer.appendChild(checkbox);
+                }
             }
 
             titleContainer.appendChild(titleEl);
@@ -561,6 +577,8 @@ function renderDayview() {
 }
 
 if (dayViewClose) dayViewClose.addEventListener("click", closeDayView);
+
+
 
 if (dayViewModal) {
     dayViewModal.addEventListener("click", function(event) {

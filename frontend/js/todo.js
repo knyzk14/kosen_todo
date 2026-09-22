@@ -2,24 +2,17 @@ import { auth } from './firebase-init.js';
 import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
 // Googleログイン（Classroomスコープ付き）を実行し、トークンを取得する関数
-// Googleログイン（Classroomスコープ付き）を実行し、トークンを取得する関数
 export async function authenticateWithGoogleForClassroom() {
     const provider = new GoogleAuthProvider();
+    // Classroomの課題読み取り権限を追加
     provider.addScope('https://www.googleapis.com/auth/classroom.coursework.me.readonly');
     provider.addScope('https://www.googleapis.com/auth/classroom.courses.readonly');
 
     try {
         const result = await signInWithPopup(auth, provider);
+        // Google API用のアクセストークンを取得
         const credential = GoogleAuthProvider.credentialFromResult(result);
         const accessToken = credential.accessToken;
-        
-        // ★ デバッグ: アクセストークンが取得できているか確認
-        console.log("取得したアクセストークン:", accessToken);
-        
-        if (!accessToken) {
-            throw new Error("アクセストークンが取得できませんでした (null)");
-        }
-        
         return accessToken;
     } catch (error) {
         console.error("Google認証エラー:", error);
@@ -38,11 +31,8 @@ export async function syncClassroomTasks(apiBaseUrl, accessToken) {
             body: JSON.stringify({ access_token: accessToken })
         });
 
-        // ★ デバッグ: バックエンドからのレスポンス(エラー内容)の中身を見る
         if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            console.error("バックエンドからのエラー詳細:", errData);
-            throw new Error(`同期失敗: ${res.status} - ${JSON.stringify(errData)}`);
+            throw new Error(`同期失敗: ${res.status}`);
         }
 
         const data = await res.json();
@@ -94,12 +84,6 @@ export function renderTodoList(todos, apiBaseUrl, containerId) {
             li.classList.add("completed");
         }
 
-        // チェックボックス
-        const checkbox = document.createElement('input');
-        checkbox.type = "checkbox";
-        checkbox.className = "todo-checkbox";
-        checkbox.checked = isCompleted;
-
         // タイトル
         const titleSpan = document.createElement('span');
         titleSpan.className = "todo-title";
@@ -115,41 +99,63 @@ export function renderTodoList(todos, apiBaseUrl, containerId) {
             dateSpan.textContent = "期限なし";
         }
 
-        // 完了状態のトグルイベント
-        checkbox.addEventListener('change', async (e) => {
-            const newStatus = e.target.checked;
-            if (newStatus) {
-                li.classList.add("completed");
-            } else {
-                li.classList.remove("completed");
-            }
+        // Classroom課題かどうかの分岐
+        if (todo.source === "classroom") {
+            const classLink = document.createElement('a');
+            classLink.href = "https://classroom.google.com/";
+            classLink.target = "_blank";
+            classLink.textContent = "🏫";
+            classLink.className = "todo-classroom-link";
+            classLink.title = "Classroomで提出してください";
+            classLink.style.textDecoration = "none";
+            classLink.style.fontSize = "16px";
+            classLink.style.display = "flex";
+            classLink.style.alignItems = "center";
+            classLink.style.justifyContent = "center";
+            classLink.style.width = "20px";
+            
+            li.appendChild(classLink);
+        } else {
+            const checkbox = document.createElement('input');
+            checkbox.type = "checkbox";
+            checkbox.className = "todo-checkbox";
+            checkbox.checked = isCompleted;
 
-            try {
-                const res = await fetch(`${apiBaseUrl}/api/todos/${todo.id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        assignments: {
-                            [omuid]: { assigned: true, completed: newStatus }
-                        }
-                    })
-                });
-                
-                if(!res.ok) throw new Error("Update failed");
-
-            } catch (err) {
-                console.error("完了状態の更新に失敗", err);
-                alert("状態の更新に失敗しました");
-                e.target.checked = !newStatus;
-                if (!newStatus) {
+            checkbox.addEventListener('change', async (e) => {
+                const newStatus = e.target.checked;
+                if (newStatus) {
                     li.classList.add("completed");
                 } else {
                     li.classList.remove("completed");
                 }
-            }
-        });
 
-        li.appendChild(checkbox);
+                try {
+                    const res = await fetch(`${apiBaseUrl}/api/todos/${todo.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            assignments: {
+                                [omuid]: { assigned: true, completed: newStatus }
+                            }
+                        })
+                    });
+                    
+                    if(!res.ok) throw new Error("Update failed");
+
+                } catch (err) {
+                    console.error("完了状態の更新に失敗", err);
+                    alert("状態の更新に失敗しました");
+                    e.target.checked = !newStatus;
+                    if (!newStatus) {
+                        li.classList.add("completed");
+                    } else {
+                        li.classList.remove("completed");
+                    }
+                }
+            });
+
+            li.appendChild(checkbox);
+        }
         
         const infoDiv = document.createElement('div');
         infoDiv.className = "todo-info";

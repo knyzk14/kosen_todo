@@ -35,8 +35,10 @@ class TodoResponse(BaseModel):
     due_date: Optional[datetime]
     assignments: Dict
     tag_ids: List[uuid.UUID] = []
-    creator_id: str  # 追加
-    is_private: bool # 追加
+    creator_id: str
+    is_private: bool
+    source: str                  # ← 追加
+    external_id: Optional[str]   # ← 追加
 
 # APIエンドポイント
 
@@ -101,6 +103,12 @@ def update_todo(
     todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ToDoが見つかりません")
+
+    if todo.source == "classroom" and todo_data.assignments is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Classroomの課題はアプリから完了状態を変更できません。Google Classroom上で提出してください。"
+        )
 
     is_member = any(member.id == user_id for member in todo.calendar.members)
     if todo.calendar.owner_id != user_id and not is_member:
@@ -219,7 +227,9 @@ def get_all_todos(
                 "assignments": td.assignments,
                 "tag_ids": [t.id for t in td.tags],
                 "creator_id": td.creator_id,
-                "is_private": True
+                "is_private": True,
+                "source": td.source,
+                "external_id": td.external_id
             })
         else:
             todos_res.append({
@@ -230,7 +240,9 @@ def get_all_todos(
                 "assignments": td.assignments,
                 "tag_ids": [t.id for t in td.tags],
                 "creator_id": td.creator_id,
-                "is_private": td.is_private
+                "is_private": td.is_private,
+                "source": td.source,
+                "external_id": td.external_id
             })
 
     return todos_res

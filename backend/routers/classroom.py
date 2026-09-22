@@ -51,23 +51,44 @@ def sync_classroom_todos(
 
     for course in courses:
         course_id = course["id"]
-        # どの授業の課題か分かるようにタイトルにコース名を含める
         course_name = course.get("name", "名称未設定コース")
-        
-        # 2. 各コースの課題 (courseWork) を取得
+
+        subs_url = f"https://classroom.googleapis.com/v1/courses/{course_id}/studentSubmissions"
+        subs_res = requests.get(subs_url, headers=headers, params={"courseWorkId": "-"})
+
+        submission_states = {}
+        if subs_res.status_code == 200:
+            for sub in subs_res.json().get("studentSubmissions", []):
+                submission_states[sub["courseWorkId"]] = sub.get("state")
+
         cw_url = f"https://classroom.googleapis.com/v1/courses/{course_id}/courseWork"
         cw_res = requests.get(cw_url, headers=headers)
         if cw_res.status_code != 200:
             continue
-            
+
         cw_data = cw_res.json()
         course_works = cw_data.get("courseWork", [])
         
         for cw in course_works:
             cw_id = cw["id"]
+            
+            # 提出状況を判定 ("TURNED_IN"=提出済, "RETURNED"=採点返却済)
+            state = submission_states.get(cw_id, "NEW")
+            is_completed = state in ["TURNED_IN", "RETURNED"]
+
+            existing_todo = db.query(models.Todo).filter(
+                models.Todo.calendar_id == default_calendar.id,
+                models.Todo.source == "classroom",
+                models.Todo.external_id == cw_id
+            ).first()
+
+            if is_completed:
+                if existing_todo:
+                    db.delete(existing_todo) # 提出済みなのにDBにある場合は削除
+                continue # 次の課題へスキップ
+
             title = f"[{course_name}] {cw.get('title', '無題の課題')}"
             
-            # 期日の計算
             due_date_info = cw.get("dueDate")
             due_time_info = cw.get("dueTime")
             
@@ -88,6 +109,7 @@ def sync_classroom_todos(
                 models.Todo.source == "classroom",
                 models.Todo.external_id == cw_id
             ).first()
+
             if existing_todo:
                 existing_todo.title = title
                 existing_todo.due_date = naive_due_date

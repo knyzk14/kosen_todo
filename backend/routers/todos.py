@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import and_,or_
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List, Dict
@@ -194,6 +194,7 @@ def delete_todo(
 
 @router.get("", response_model=List[TodoResponse])
 def get_all_todos(
+    due_after: Optional[datetime] = Query(None, description="指定した日時以降の期限のToDoのみ取得"),
     due_before: Optional[datetime] = Query(None, description="指定した日時以前の期限のToDoのみ取得"),
     include_no_due: bool = Query(True, description="期限なしのToDoを含めるか"),
     user_id: str = Depends(get_current_user),
@@ -209,23 +210,33 @@ def get_all_todos(
         return []
 
     # タイムゾーン情報を削除してDBと型を合わせる
+    if due_after:
+        due_after = due_after.replace(tzinfo=None)
     if due_before:
         due_before = due_before.replace(tzinfo=None)
 
-    # クエリのベースを作成
     query = db.query(models.Todo).filter(models.Todo.calendar_id.in_(calendar_ids))
 
-    # --- フィルタリングの適用 ---
-    if due_before is not None:
+    # --- フィルタリング条件の構築 ---
+    date_conditions = []
+    if due_after:
+        date_conditions.append(models.Todo.due_date >= due_after)
+    if due_before:
+        date_conditions.append(models.Todo.due_date <= due_before)
+
+    if date_conditions:
+        # due_after と due_before 両方あれば AND で結合、片方ならそれのみ
+        date_filter = and_(*date_conditions)
+        
         if include_no_due:
-            # 期限が指定日時より前、または期限なし
-            query = query.filter(or_(models.Todo.due_date <= due_before, models.Todo.due_date.is_(None)))
+            # 期間内 または 期限なし
+            query = query.filter(or_(date_filter, models.Todo.due_date.is_(None)))
         else:
-            # 期限が指定日時より前のみ（期限なしは除外）
-            query = query.filter(models.Todo.due_date <= due_before)
+            # 期間内のみ（期限なしは除外）
+            query = query.filter(date_filter)
     else:
         if not include_no_due:
-            # 期限指定はないが、期限なしは除外する
+            # 期間指定はないが、期限なしは除外する
             query = query.filter(models.Todo.due_date.is_not(None))
 
     todos = query.all()

@@ -603,3 +603,10 @@ main {
 .day-view-embedded #day-view-close{
     display: none;
 }
+
+#current-calendar-name {
+    text-align: center;
+    font-size: 16px;
+    margin: 8px 0;
+    color: var(--text-color, #333);
+}

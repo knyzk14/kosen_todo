@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from sqlalchemy.orm import Session
+from sqlalchemy import and_,or_
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List, Dict
@@ -35,8 +36,10 @@ class TodoResponse(BaseModel):
     due_date: Optional[datetime]
     assignments: Dict
     tag_ids: List[uuid.UUID] = []
-    creator_id: str  # 追加
-    is_private: bool # 追加
+    creator_id: str
+    is_private: bool
+    source: str                  # ← 追加
+    external_id: Optional[str]   # ← 追加
 
 # APIエンドポイント
 
@@ -101,6 +104,12 @@ def update_todo(
     todo = db.query(models.Todo).filter(models.Todo.id == todo_id).first()
     if not todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ToDoが見つかりません")
+
+    if todo.source == "classroom" and todo_data.assignments is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Classroomの課題はアプリから完了状態を変更できません。Google Classroom上で提出してください。"
+        )
 
     is_member = any(member.id == user_id for member in todo.calendar.members)
     if todo.calendar.owner_id != user_id and not is_member:
@@ -185,6 +194,9 @@ def delete_todo(
 
 @router.get("", response_model=List[TodoResponse])
 def get_all_todos(
+    due_after: Optional[datetime] = Query(None, description="指定した日時以降の期限のToDoのみ取得"),
+    due_before: Optional[datetime] = Query(None, description="指定した日時以前の期限のToDoのみ取得"),
+    include_no_due: bool = Query(True, description="期限なしのToDoを含めるか"),
     user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -192,15 +204,44 @@ def get_all_todos(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ユーザーが見つかりません")
 
-    # 自分がオーナーのカレンダーと、共有されているカレンダーのIDをすべて取得
     calendar_ids = {cal.id for cal in user.owned_calendars} | {cal.id for cal in user.shared_calendars}
 
     if not calendar_ids:
         return []
 
-    todos = db.query(models.Todo).filter(models.Todo.calendar_id.in_(calendar_ids)).all()
+    # タイムゾーン情報を削除してDBと型を合わせる
+    if due_after:
+        due_after = due_after.replace(tzinfo=None)
+    if due_before:
+        due_before = due_before.replace(tzinfo=None)
 
-    # 期日 (due_date) が近い順にソート。期日未設定(None)は末尾に配置
+    query = db.query(models.Todo).filter(models.Todo.calendar_id.in_(calendar_ids))
+
+    # --- フィルタリング条件の構築 ---
+    date_conditions = []
+    if due_after:
+        date_conditions.append(models.Todo.due_date >= due_after)
+    if due_before:
+        date_conditions.append(models.Todo.due_date <= due_before)
+
+    if date_conditions:
+        # due_after と due_before 両方あれば AND で結合、片方ならそれのみ
+        date_filter = and_(*date_conditions)
+        
+        if include_no_due:
+            # 期間内 または 期限なし
+            query = query.filter(or_(date_filter, models.Todo.due_date.is_(None)))
+        else:
+            # 期間内のみ（期限なしは除外）
+            query = query.filter(date_filter)
+    else:
+        if not include_no_due:
+            # 期間指定はないが、期限なしは除外する
+            query = query.filter(models.Todo.due_date.is_not(None))
+
+    todos = query.all()
+
+    # 期日が近い順にソート（Noneは末尾へ）
     todos_sorted = sorted(
         todos,
         key=lambda x: (x.due_date is None, x.due_date)
@@ -209,7 +250,7 @@ def get_all_todos(
     todos_res = []
     for td in todos_sorted:
         calendar = td.calendar
-        # 作成者でもなく、カレンダーオーナーでもない場合はマスキング
+        # マスキング判定
         if td.is_private and td.creator_id != user_id and calendar.owner_id != user_id:
             todos_res.append({
                 "id": td.id,
@@ -219,7 +260,9 @@ def get_all_todos(
                 "assignments": td.assignments,
                 "tag_ids": [t.id for t in td.tags],
                 "creator_id": td.creator_id,
-                "is_private": True
+                "is_private": True,
+                "source": td.source,
+                "external_id": td.external_id
             })
         else:
             todos_res.append({
@@ -230,7 +273,9 @@ def get_all_todos(
                 "assignments": td.assignments,
                 "tag_ids": [t.id for t in td.tags],
                 "creator_id": td.creator_id,
-                "is_private": td.is_private
+                "is_private": td.is_private,
+                "source": td.source,
+                "external_id": td.external_id
             })
 
     return todos_res

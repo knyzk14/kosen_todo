@@ -24,7 +24,7 @@
         <script src="/js/auth-guard.js" type="module"></script>
         <script src="/js/sidebar.js" type="module"></script>
         <script src="/js/dashboard.js" type="module"></script>
-        <script src="/js/freetime.js" type="module"></script>
+        <script src="/js/freebusy.js" type="module"></script>
         <script src="/js/todo.js" type="module"></script>
     </head>
     <body>
@@ -97,6 +97,9 @@
                             <button id="day-view-close">✖</button>
                         </div>
                     </div>
+
+                    <div id="day-view-all-day" class="day-view-all-day"></div>
+
                     <div class="day-view-body">
                         <div class="day-view-hours" id="day-view-hours"></div>
                         <div class="day-view-events" id="day-view-events"></div>
@@ -110,9 +113,14 @@
                         <h4 id="showDay"></h4>
                     </div>
                     <div class="time-input">
-                        <input type="time" id="start-time">
-                        <span>～</span>
-                        <input type="time" id="end-time">
+                        <div class="time-input-row">
+                            <label for="start-time">開始:</label>
+                            <input type="datetime-local" id="start-time">
+                        </div>
+                        <div class="time-input-row">
+                            <label for="end-time">終了:</label>
+                            <input type="datetime-local" id="end-time">
+                        </div>
                     </div>
                     <textarea id="schedule-title" placeholder="タイトルを入力..."></textarea>
                     <label><input type = "radio" name = "schedule-type"  value="task" id="radio-task">タスク</label>

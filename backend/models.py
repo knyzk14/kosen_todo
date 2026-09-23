@@ -96,6 +96,7 @@ class Todo(Base):
         ForeignKey("calendars.id", ondelete="CASCADE"), nullable=False
     )
     title: Mapped[str] = mapped_column(String(200), nullable=False)
+    start_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     due_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     assignments: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)

@@ -17,29 +17,32 @@ router = APIRouter(prefix="/api/todos", tags=["todos"])
 class TodoCreate(BaseModel):
     calendar_id: uuid.UUID
     title: str
+    start_at: Optional[datetime] = None
     due_date: Optional[datetime] = None
     tag_ids: List[uuid.UUID] = []
     assignments: Dict = {}
-    is_private: bool = False # 追加
+    is_private: bool = False
 
 class TodoUpdate(BaseModel):
     title: Optional[str] = None
+    start_at: Optional[datetime] = None
     due_date: Optional[datetime] = None
     assignments: Optional[Dict] = None
     tag_ids: Optional[List[uuid.UUID]] = None
-    is_private: Optional[bool] = None # 追加
+    is_private: Optional[bool] = None
 
 class TodoResponse(BaseModel):
     id: uuid.UUID
     calendar_id: uuid.UUID
     title: str
+    start_at: Optional[datetime]
     due_date: Optional[datetime]
     assignments: Dict
     tag_ids: List[uuid.UUID] = []
     creator_id: str
     is_private: bool
-    source: str                  # ← 追加
-    external_id: Optional[str]   # ← 追加
+    source: str
+    external_id: Optional[str]
 
 # APIエンドポイント
 
@@ -68,10 +71,12 @@ def create_todo(
     new_todo = models.Todo(
         calendar_id=todo_data.calendar_id,
         title=todo_data.title,
+        start_at=todo_data.start_at, # ← 追加
         due_date=todo_data.due_date,
         assignments=todo_data.assignments,
-        creator_id=user_id,             # 追加
-        is_private=todo_data.is_private # 追加
+        creator_id=user_id,
+        is_private=todo_data.is_private,
+        source="local"
     )
 
     if todo_data.tag_ids:
@@ -121,6 +126,8 @@ def update_todo(
 
     if todo_data.title is not None:
         todo.title = todo_data.title
+    if todo_data.start_at is not None:
+        todo.start_at = todo_data.start_at
     if todo_data.due_date is not None:
         todo.due_date = todo_data.due_date
     if todo_data.is_private is not None:
@@ -256,6 +263,7 @@ def get_all_todos(
                 "id": td.id,
                 "calendar_id": td.calendar_id,
                 "title": "予定あり",
+                "start_at": td.start_at,
                 "due_date": td.due_date,
                 "assignments": td.assignments,
                 "tag_ids": [t.id for t in td.tags],
@@ -269,6 +277,7 @@ def get_all_todos(
                 "id": td.id,
                 "calendar_id": td.calendar_id,
                 "title": td.title,
+                "start_at": td.start_at,
                 "due_date": td.due_date,
                 "assignments": td.assignments,
                 "tag_ids": [t.id for t in td.tags],

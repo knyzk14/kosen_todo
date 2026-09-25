@@ -215,6 +215,29 @@ function createCalendar(year, month) {
         p.textContent = i;
         day.appendChild(p);
         day.appendChild(hr);
+
+        const dayEntries = data?.[year]?.[month + 1]?.[i] || {};
+        const upcomingEntries = Object.entries(dayEntries)
+            .sort(([timeA], [timeB]) => timeA.localeCompare(timeB))
+            .slice(0, 3);
+        if (upcomingEntries.length > 0) {
+            const scheduleList = document.createElement("ul");
+            scheduleList.className = "day-schedules";
+            upcomingEntries.forEach(([time, entry]) => {
+                const item = document.createElement("li");
+                item.className = `day-schedule-item day-schedule-${entry.type}`;
+                const timeLabel = document.createElement("span");
+                timeLabel.className = "day-schedule-time";
+                timeLabel.textContent = time.split(" - ")[0];
+                const title = document.createElement("span");
+                title.className = "day-schedule-title";
+                title.textContent = entry.title;
+                item.append(timeLabel, title);
+                scheduleList.appendChild(item);
+            });
+            day.appendChild(scheduleList);
+        }
+
         if (days) days.appendChild(day);
     }
     updateMonthlyCounts(year, month);

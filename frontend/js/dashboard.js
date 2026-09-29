@@ -165,24 +165,47 @@ async function loadDataFromAPI() {
             }
         });
 
-                apiData.todos.forEach(todo => {
-                    const dueDate = new Date(todo.due_date);
-                    const startDate = todo.start_at
-                        ? new Date(todo.start_at)
-                        : new Date(dueDate.getTime() - 60 * 60 * 1000);
+        apiData.todos.forEach(todo => {
+            const dueDate = new Date(todo.due_date);
+            const startDate = todo.start_at
+                ? new Date(todo.start_at)
+                : new Date(dueDate.getTime() - 60 * 60 * 1000);
+            const startKey = getDateKey(startDate);
+            const endKey = getDateKey(dueDate);
 
-                    const startKey = getDateKey(startDate);
-                    const endKey = getDateKey(dueDate);
-                    const isMultiDay = startKey !== endKey;
-
-            data[year][month][day][timeStr] = {
+            const startStr =
+                `${String(startDate.getHours()).padStart(2, "0")}:` +
+                `${String(startDate.getMinutes()).padStart(2, "0")}`;
+            const endStr =
+                `${String(dueDate.getHours()).padStart(2, "0")}:` +
+                `${String(dueDate.getMinutes()).padStart(2, "0")}`;
+            const eventInfo = {
                 id: todo.id,
                 title: todo.title,
                 type: "task",
                 completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false,
                 source: todo.source,
-                external_id: todo.external_id
+                external_id: todo.external_id,
+                startAt: todo.start_at || startDate.toISOString(),
+                endAt: todo.due_date
             };
+
+            if (startKey !== endKey) {
+                let current = new Date(startDate);
+                while (getDateKey(current) <= endKey) {
+                    addAllDayEvent(new Date(current), eventInfo);
+                    current.setDate(current.getDate() + 1);
+                }
+                return;
+            }
+
+            const year = startDate.getFullYear();
+            const month = startDate.getMonth() + 1;
+            const day = startDate.getDate();
+            if (!data[year]) data[year] = {};
+            if (!data[year][month]) data[year][month] = {};
+            if (!data[year][month][day]) data[year][month][day] = {};
+            data[year][month][day][`${startStr} - ${endStr}`] = eventInfo;
         });
     } catch (e) {
         console.error(e);
@@ -271,23 +294,54 @@ function createCalendar(year, month) {
         day.appendChild(p);
         day.appendChild(hr);
 
+        const date = new Date(year, month, i);
+        const dateKey = getDateKey(date);
         const dayEntries = data?.[year]?.[month + 1]?.[i] || {};
-        const upcomingEntries = Object.entries(dayEntries)
-            .sort(([timeA], [timeB]) => timeA.localeCompare(timeB))
+        const visibleEntries = Object.entries(dayEntries).map(([time, entry]) => ({
+            sortTime: time.slice(0, 5),
+            timeLabel: time.split(" - ")[0],
+            entry
+        }));
+        (allDayEvents[dateKey] || []).forEach(entry => {
+            const startDate = new Date(entry.startAt);
+            const startsToday = getDateKey(startDate) === dateKey;
+            const startTimeLabel = `${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")}`;
+            const timeLabel = startsToday ? startTimeLabel : "";
+            visibleEntries.push({
+                sortTime: startTimeLabel,
+                timeLabel,
+                entry,
+                continuation: !startsToday,
+                endsToday: getDateKey(new Date(entry.endAt)) === dateKey,
+                weekday: date.getDay()
+            });
+        });
+        const upcomingEntries = visibleEntries
+            .sort((a, b) => a.sortTime.localeCompare(b.sortTime))
             .slice(0, 3);
         if (upcomingEntries.length > 0) {
             const scheduleList = document.createElement("ul");
             scheduleList.className = "day-schedules";
-            upcomingEntries.forEach(([time, entry]) => {
+            upcomingEntries.forEach(({ timeLabel, entry, continuation, endsToday, weekday }) => {
                 const item = document.createElement("li");
                 item.className = `day-schedule-item day-schedule-${entry.type}`;
-                const timeLabel = document.createElement("span");
-                timeLabel.className = "day-schedule-time";
-                timeLabel.textContent = time.split(" - ")[0];
+                if (entry.startAt && entry.endAt && getDateKey(new Date(entry.startAt)) !== getDateKey(new Date(entry.endAt))) {
+                    item.classList.add(continuation ? "day-schedule-continuation" : "day-schedule-multiday-start");
+                    if (continuation && weekday === 0) item.classList.add("day-schedule-week-start");
+                    if (endsToday || weekday === 6) item.classList.add("day-schedule-segment-end");
+                }
+                if (continuation) {
+                    item.setAttribute("aria-label", `${entry.title}（継続中）`);
+                    scheduleList.appendChild(item);
+                    return;
+                }
+                const time = document.createElement("span");
+                time.className = "day-schedule-time";
+                time.textContent = timeLabel;
                 const title = document.createElement("span");
                 title.className = "day-schedule-title";
                 title.textContent = entry.title;
-                item.append(timeLabel, title);
+                item.append(time, title);
                 scheduleList.appendChild(item);
             });
             day.appendChild(scheduleList);

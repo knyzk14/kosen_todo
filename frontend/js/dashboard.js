@@ -165,25 +165,84 @@ async function loadDataFromAPI() {
             }
         });
 
+            //     apiData.todos.forEach(todo => {
+            //         const dueDate = new Date(todo.due_date);
+            //         const startDate = todo.start_at
+            //             ? new Date(todo.start_at)
+            //             : new Date(dueDate.getTime() - 60 * 60 * 1000);
+
+            //         const startKey = getDateKey(startDate);
+            //         const endKey = getDateKey(dueDate);
+            //         const isMultiDay = startKey !== endKey;
+
+            // data[year][month][day][timeStr] = {
+            //     id: todo.id,
+            //     title: todo.title,
+            //     type: "task",
+            //     completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false,
+            //     source: todo.source,
+            //     external_id: todo.external_id
+            // };
                 apiData.todos.forEach(todo => {
                     const dueDate = new Date(todo.due_date);
+
                     const startDate = todo.start_at
                         ? new Date(todo.start_at)
                         : new Date(dueDate.getTime() - 60 * 60 * 1000);
 
                     const startKey = getDateKey(startDate);
                     const endKey = getDateKey(dueDate);
+
                     const isMultiDay = startKey !== endKey;
 
-            data[year][month][day][timeStr] = {
-                id: todo.id,
-                title: todo.title,
-                type: "task",
-                completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false,
-                source: todo.source,
-                external_id: todo.external_id
-            };
-        });
+                    const startStr =
+                        `${String(startDate.getHours()).padStart(2, '0')}:` +
+                        `${String(startDate.getMinutes()).padStart(2, '0')}`;
+
+                    const endStr =
+                        `${String(dueDate.getHours()).padStart(2, '0')}:` +
+                        `${String(dueDate.getMinutes()).padStart(2, '0')}`;
+
+                    const timeStr = `${startStr} - ${endStr}`;
+
+                    const taskInfo = {
+                        id: todo.id,
+                        title: todo.title,
+                        type: "task",
+                        completed: todo.assignments && todo.assignments[omuid]
+                            ? todo.assignments[omuid].completed
+                            : false,
+                        source: todo.source,
+                        external_id: todo.external_id,
+
+                        // 編集用
+                        startAt: todo.start_at,
+                        endAt: todo.due_date
+                    };
+
+                    if (isMultiDay) {
+                        // 複数日にまたがるタスク
+                        let current = new Date(startDate);
+
+                        while (getDateKey(current) <= endKey) {
+                            addAllDayEvent(new Date(current), taskInfo);
+
+                            current.setDate(current.getDate() + 1);
+                        }
+
+                    } else {
+                        // 1日以内のタスク
+                        const year = startDate.getFullYear();
+                        const month = startDate.getMonth() + 1;
+                        const day = startDate.getDate();
+
+                        if (!data[year]) data[year] = {};
+                        if (!data[year][month]) data[year][month] = {};
+                        if (!data[year][month][day]) data[year][month][day] = {};
+
+                        data[year][month][day][timeStr] = taskInfo;
+                    }
+                });
     } catch (e) {
         console.error(e);
     }

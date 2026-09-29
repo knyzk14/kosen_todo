@@ -8,8 +8,8 @@ body {
     text-align: center;
     background-color: var(--login-form-color);
     padding: 20px 15px 15px 15px;
-    border-radius: 15px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-radius: 10px;
+    box-shadow: var(--surface-shadow);
 }
 
 .login-form h1 {
@@ -29,7 +29,6 @@ body {
     flex-grow: 0;
     padding-left: 45px;
     align-items: center;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
     cursor: pointer;
     transition: transform 0.2s ease;
 }

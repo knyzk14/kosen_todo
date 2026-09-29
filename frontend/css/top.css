@@ -43,14 +43,14 @@ body, html {
   color: var(--background-color);
   background-color: var(--text-color);
   border: none;
+  border-radius: 10px;
   font-size: large;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .button:hover {
   background-color: var(--sub-text-color);
   transform: translate(3px,-3px);
-  box-shadow: -2px 2px 0 rgba(0, 0, 0, 0.5);
 }

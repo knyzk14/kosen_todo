@@ -10,6 +10,7 @@ sidebar {
     border-radius: 10px;
     background-color: var(--rightbar-background-color);
     box-sizing: border-box;
+    box-shadow: var(--surface-shadow);
 }
 
 .profile {
@@ -23,10 +24,10 @@ sidebar {
     border: 1px solid var(--mute-text-color);
     border-radius: 10px;
     background-color: var(--user-profile-background-color);
-    box-shadow: 0 4px 4px rgba(0,0,0,0.15);
+    box-shadow: var(--surface-shadow);
     cursor: pointer;
     transition: transform 0.2s ease;
-} 
+}
 
 .profile:hover {
     transform: scale(1.05);
@@ -70,6 +71,8 @@ sidebar {
     height: 30px;
     background-color: transparent;
     font-size: large;
+    border: none;
+    border-radius: 10px;
     z-index: 2;
     cursor: pointer;
     font-size: 15px;
@@ -83,7 +86,6 @@ sidebar {
     z-index: 1;
     background-color: var(--background-color);
     border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -147,11 +149,10 @@ sidebar {
 .ts-header button {
     background-color: #fdfdfd;
     border: none;
-    border-bottom: 1px solid #333;
     padding: 4px 10px;
     font-size: 12px;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 10px;
 }
  
 .ts-header h4 {
@@ -176,7 +177,7 @@ sidebar {
 #new-member-username {
     border: none;
     outline: none;
-    border-radius: 5px;
+    border-radius: 10px;
     width: 60%;
     height: 30px;
 }
@@ -186,7 +187,7 @@ sidebar {
     background-color: #3a7bc8;
     color: var(--background-color);
     outline: none;
-    border-radius: 5px;
+    border-radius: 10px;
     height: 30px;
     padding: 10px;
     cursor: pointer;
@@ -205,9 +206,10 @@ sidebar {
  
 .group-block {                      /* ★新規: グループ1個分の枠 */
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: auto;
     background: var(--background-color, #fff);
+    box-shadow: var(--surface-shadow);
 }
  
 .group-block-title {
@@ -376,10 +378,11 @@ sidebar {
     gap: 10px;
     padding: 8px 10px;
     border: 1px solid #eee;
-    border-radius: 6px;
+    border-radius: 10px;
     background: var(--background-color, #fff);
     cursor: pointer;
     font-size: 13px;
+    box-shadow: var(--surface-shadow);
 }
  
 .group-member-item:hover {
@@ -394,8 +397,8 @@ sidebar {
 
 #group-add-btn {
     padding: 2px 10px;
-    border: 1px solid #fff;
-    border-radius: 12px;
+    border: none;
+    border-radius: 10px;
     background: transparent;
     color: #fff;
     font-size: 12px;
@@ -418,7 +421,7 @@ sidebar {
     margin-bottom: 10px;
     padding: 6px 8px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 13px;
 }
  
@@ -444,7 +447,7 @@ sidebar {
     margin-top: 12px;
     padding: 8px;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     background: #4a90e2;
     color: #fff;
     font-size: 14px;
@@ -467,8 +470,8 @@ sidebar {
     width: 26px;
     height: 26px;
     padding: 0;
-    border: 1px solid #fff;
-    border-radius: 50%;
+    border: none;
+    border-radius: 10px;
     background: transparent;
     color: #fff;
     font-size: 13px;
@@ -496,15 +499,14 @@ sidebar {
 #group-mode-cancel,
 #group-mode-submit {
     padding: 4px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    border: none;
+    border-radius: 10px;
     background: #fdfdfd;
     font-size: 12px;
     cursor: pointer;
 }
  
 #group-mode-submit {
-    border-color: #d9534f;
     background: #d9534f;
     color: #fff;
 }
@@ -597,7 +599,7 @@ sidebar {
     background-color: #4a90e2;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px;
     padding: 6px 12px;
     font-size: 12px;
     cursor: pointer;
@@ -637,8 +639,9 @@ sidebar {
     gap: 10px;
     background: #fff;
     border: 1px solid #ddd;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px;
+    box-shadow: var(--surface-shadow);
     transition: opacity 0.2s;
 }
 

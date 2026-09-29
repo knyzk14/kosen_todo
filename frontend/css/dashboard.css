@@ -73,8 +73,9 @@ main {
     position: fixed;
     visibility: hidden;
     opacity: 0;
-    border: 3px solid var(--text-color);
+    border: 1px solid var(--text-color);
     border-radius: 10px;
+    box-shadow: var(--surface-shadow);
     z-index: 999;
     width: 250px;
     height: 300px;
@@ -96,7 +97,7 @@ main {
     width: 206px;
     height: 25px;
     border: 2px solid var(--text-color);
-    border-radius: 5px;
+    border-radius: 10px;
     background-color: var(--calender-appicon-color);
     font-family: "Noto Sans JP", sans-serif;
     padding-left: 10px;
@@ -114,8 +115,8 @@ main {
     margin: 10px;
     width: 100px;
     height: 40px;
-    border: 2px solid var(--text-color);
-    border-radius: 5px;
+    border: none;
+    border-radius: 10px;
     background-color: var(--calender-appicon-color);
     font-size: 15px;
     transition: background-color 0.2s ease;
@@ -153,6 +154,7 @@ main {
     z-index: 999;
     background-color: var(--calender-appicon-color);
     padding: 5px;
+    box-shadow: var(--surface-shadow);
     text-align: center;
     padding: 0;
     opacity: 0;
@@ -168,7 +170,7 @@ main {
     width: 100px;
     height: 40px;
     background-color: transparent;
-    border-radius: 5px;
+    border-radius: 10px;
     outline: none;
     border: none;
     margin: auto;
@@ -231,7 +233,8 @@ main {
     min-height: 130px;
     padding: 0 5vw;
     background-color: #ffffff;
-    border: 2px solid #242424;
+    border: none;
+    border-radius: 10px;
     color: #242424;
     font-weight: 700;
     font-size: clamp(1rem, 1.5vw + 0.5rem, 1.55rem);
@@ -289,9 +292,8 @@ main {
     width: 270px;
     border-radius: 10px;
     background:white;
-    border:2px solid;
-    border-color: #333;
-    box-shadow: 0 0 1px gray;
+    border: 1px solid #333;
+    box-shadow: var(--surface-shadow);
 }
 
 .modal-header{
@@ -331,7 +333,7 @@ main {
 .time-input input {
     width:100%;
     height:40px;
-    border-radius: 5px;
+    border-radius: 10px;
     border: 1px solid var(--mute-text-color);
     padding: 0 10px;
     outline: none;
@@ -348,7 +350,7 @@ main {
 #schedule-title{
     width:100%;
     height:130px;
-    border-radius: 5px;
+    border-radius: 10px;
     border: 1px solid var(--mute-text-color);
     padding: 0 10px;
     outline: none;
@@ -374,7 +376,7 @@ main {
     background:#fdfdfd;
 
     border:none;
-    border-bottom:1px solid black;
+    border-radius: 10px;
 
     padding: 5px 15px;
 
@@ -415,11 +417,11 @@ main {
     max-height: 80vh;
 
     background: white;
-    border: 2px solid #333;
-    border-radius: 8px;
+    border: 1px solid #333;
+    border-radius: 10px;
 
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--surface-shadow);
 }
 
 .day-view-header {
@@ -447,7 +449,7 @@ main {
 #day-view-add {
     background: #fdfdfd;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     padding: 5px 10px;
     font-size: 13px;
     cursor: pointer;
@@ -569,7 +571,7 @@ main {
     background: #fff5f5;
     color: #c00;
     border: none;
-    border-bottom: 1px solid #c00;
+    border-radius: 10px;
     padding: 5px 15px;
     cursor: pointer;
     font-size: 16px;
@@ -604,8 +606,8 @@ main {
     width:100%;
     max-width:100%;
     max-height: 750px;
-    box-shadow:none;
-    border-radius:8px;
+    box-shadow: var(--surface-shadow);
+    border-radius:10px;
     margin:0;
 }
 

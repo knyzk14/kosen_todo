@@ -12,6 +12,21 @@ body {
     font-family: "Noto Sans JP", sans-serif;
 }
 
+:root {
+    --surface-shadow: 0 4px 4px rgba(0,0,0,0.15);
+}
+
+button {
+    border: none;
+    border-radius: 10px;
+}
+
+input,
+textarea,
+select {
+    border-radius: 10px;
+}
+
 .common-background {
     position: fixed;
     top: 0;

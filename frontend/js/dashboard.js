@@ -254,6 +254,7 @@ function updateMonthlyCounts(year = currentYear, month = currentMonth) {
     let taskTotal = 0;
     const monthData = data?.[year]?.[month + 1];
 
+    // 1日以内の予定・タスク
     if (monthData) {
         Object.values(monthData).forEach(daySchedule => {
             Object.values(daySchedule).forEach(entry => {
@@ -265,6 +266,28 @@ function updateMonthlyCounts(year = currentYear, month = currentMonth) {
             });
         });
     }
+
+    // 日をまたぐ予定・タスク（表示中の月にかかっているものを1件ずつ数える）
+    const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
+    const countedMultiDay = new Set();
+
+    Object.entries(allDayEvents).forEach(([dateKey, entries]) => {
+        if (!dateKey.startsWith(monthPrefix)) return;
+
+        entries.forEach(entry => {
+            const uniqueKey = `${entry.type}:${entry.id}`;
+            if (countedMultiDay.has(uniqueKey)) return;
+            countedMultiDay.add(uniqueKey);
+
+            if (entry.type === "task") {
+                taskTotal++;
+            } else {
+                planTotal++;
+            }
+        });
+    }
+    );
+
     if (planCount) planCount.textContent = ` ${planTotal}`;
     if (taskCount) taskCount.textContent = ` ${taskTotal}`;
 }
@@ -680,7 +703,21 @@ function renderDayview() {
             let start = timeToMinutes(startStr);
             let end = timeToMinutes(endStr);
             if (end <= start) end = start + 30;
-            return { time, startStr, endStr, start, end, title: info.title, type: info.type || "plan", id: info.id, completed: info.completed, source: info.source, external_id: info.external_id };
+            return {
+                time,
+                startStr,
+                endStr,
+                start,
+                end,
+                startAt: info.startAt,
+                endAt: info.endAt,
+                title: info.title,
+                type: info.type || "plan",
+                id: info.id,
+                completed: info.completed,
+                source: info.source,
+                external_id: info.external_id
+            };
         });
 
         entries.sort((a, b) => a.start - b.start);

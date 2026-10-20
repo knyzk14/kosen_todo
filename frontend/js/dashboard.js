@@ -20,6 +20,7 @@ const showDay = document.querySelector("#showDay");
 const modalButtons = document.querySelector(".modal-buttons");
 
 let editingKey = null;
+let editingType = null;
 let existingId = null;
 
 const planCount = document.querySelector("#plan");
@@ -475,8 +476,9 @@ if (schedule_ok) {
         const start = startTime.value;
         const end = endTime.value;
         const title = scheduleTitle.value;
-        const type = taskRadio.checked ? "task" : (planRadio.checked ? "plan" : null);
-
+        const type = existingId
+            ? editingType
+            : (taskRadio.checked ? "task" : (planRadio.checked ? "plan" : null));
         if (start === "" || end === "" || title === "" || !type) {
             alert("入力されていない項目があります．");
             return;
@@ -548,21 +550,37 @@ if (schedule_ok) {
 async function handleDeleteSchedule() {
     if (!existingId) return;
 
-    const type = taskRadio.checked ? "task" : "plan";
-    const endpoint = type === "plan" ? `${API_BASE_URL}/api/events/${existingId}` : `${API_BASE_URL}/api/todos/${existingId}`;
+    const type = editingType === "task" ? "task" : "plan";
+    const endpoint = type === "plan"
+        ? `${API_BASE_URL}/api/events/${existingId}`
+        : `${API_BASE_URL}/api/todos/${existingId}`;
 
     try {
-        await fetch(endpoint, { method: "DELETE" });
+        const res = await fetch(endpoint, { method: "DELETE" });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error("削除APIエラー:", res.status, errorText);
+
+            if (res.status === 403) {
+                alert("削除する権限がありません．（作成者かカレンダーのオーナーのみ削除できます）");
+            } else if (res.status === 404) {
+                alert("すでに削除されているか、見つかりませんでした．");
+            } else {
+                alert(`削除に失敗しました（${res.status}）`);
+            }
+            return;
+        }
+
         sessionStorage.setItem("reopenDayView", JSON.stringify({
             year: selectedYear, month: selectedMonth, day: selectedDay
         }));
         location.reload();
-    } catch(e) {
+    } catch (e) {
         console.error("削除失敗", e);
         alert("削除に失敗しました");
     }
 }
-
 // --- 1日表示 (Day View) ---
 function openDayView() {
     if (dayViewTitle) dayViewTitle.textContent = `${selectedMonth + 1}月${selectedDay}日の予定`;
@@ -930,6 +948,10 @@ function openScheduleModal(rect, existingEntry = null) {
             if (planRadio) planRadio.checked = true;
         }
 
+        editingType = existingEntry.type === "task" ? "task" : "plan";
+        if (planRadio) planRadio.disabled = true;
+        if (taskRadio) taskRadio.disabled = true;
+
         editingKey = existingEntry.time || null;
         existingId = existingEntry.id;
 
@@ -940,6 +962,10 @@ function openScheduleModal(rect, existingEntry = null) {
         if (scheduleTitle) scheduleTitle.value = "";
         if (planRadio) planRadio.checked = false;
         if (taskRadio) taskRadio.checked = false;
+
+        editingType = null;
+        if (planRadio) planRadio.disabled = false;
+        if (taskRadio) taskRadio.disabled = false;
 
         editingKey = null;
         existingId = null;

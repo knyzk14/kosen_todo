@@ -135,12 +135,12 @@ async function loadDataFromAPI() {
                 id: event.id,
                 title: event.title,
                 type: "plan",
+                isPrivate: event.is_private,
 
                 // 編集するときに必要
                 startAt: event.start_at,
                 endAt: event.end_at
             };
-
             if (isMultiDay) {
                 // 日をまたぐ予定
                 // 開始日から終了日まで、それぞれの日の上部に表示する
@@ -184,6 +184,7 @@ async function loadDataFromAPI() {
                 id: todo.id,
                 title: todo.title,
                 type: "task",
+                isPrivate: todo.is_private,   // ← 追加
                 completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false,
                 source: todo.source,
                 external_id: todo.external_id,
@@ -230,6 +231,7 @@ let scheduleOpen = false;
 const startTime = document.querySelector("#start-time");
 const endTime = document.querySelector("#end-time");
 const scheduleTitle = document.querySelector("#schedule-title");
+const hiddenCheckbox = document.querySelector("#schedule-hidden"); 
 const schedule_ok = document.querySelector("#schedule-ok");
 const scheduleCancel = document.querySelector("#schedule-cancel");
 
@@ -476,6 +478,7 @@ if (schedule_ok) {
         const start = startTime.value;
         const end = endTime.value;
         const title = scheduleTitle.value;
+        const isPrivate = hiddenCheckbox ? hiddenCheckbox.checked : false;   // ← 追加
         const type = existingId
             ? editingType
             : (taskRadio.checked ? "task" : (planRadio.checked ? "plan" : null));
@@ -507,7 +510,8 @@ if (schedule_ok) {
                     calendar_id: activeCalendarId,
                     title: title,
                     start_at: toLocalISOString(startDate),
-                    end_at: toLocalISOString(endDate)
+                    end_at: toLocalISOString(endDate),
+                    is_private: isPrivate   // ← 追加
                 };
                         } else if (type === "task") {
                             endpoint = existingId ? `${API_BASE_URL}/api/todos/${existingId}` : `${API_BASE_URL}/api/todos`;
@@ -517,6 +521,7 @@ if (schedule_ok) {
                                 title: title,
                                 start_at: toLocalISOString(startDate),
                                 due_date: toLocalISOString(endDate),
+                                is_private: isPrivate,   // ← 追加
                                 assignments: {
                                     [userid]: { assigned: true, completed: false }
                                 }
@@ -672,7 +677,8 @@ function renderAllDayEvents() {
                 endAt: entry.endAt,
                 title: entry.title,
                 type: entry.type,
-                id: entry.id
+                id: entry.id,
+                isPrivate: entry.isPrivate   // ← 追加
             });
         });
 
@@ -729,6 +735,8 @@ function renderDayview() {
                 end,
                 startAt: info.startAt,
                 endAt: info.endAt,
+                isPrivate: info.isPrivate,   // ← 追加
+
                 title: info.title,
                 type: info.type || "plan",
                 id: info.id,
@@ -848,7 +856,8 @@ function renderDayview() {
                     endAt: entry.endAt,
                     title: entry.title,
                     type: entry.type,
-                    id: entry.id
+                    id: entry.id,
+                    isPrivate: entry.isPrivate   // ← 追加
                 });
             });
         });
@@ -951,6 +960,7 @@ function openScheduleModal(rect, existingEntry = null) {
         editingType = existingEntry.type === "task" ? "task" : "plan";
         if (planRadio) planRadio.disabled = true;
         if (taskRadio) taskRadio.disabled = true;
+        if (hiddenCheckbox) hiddenCheckbox.checked = !!existingEntry.isPrivate;   // ← 追加
 
         editingKey = existingEntry.time || null;
         existingId = existingEntry.id;
@@ -966,6 +976,7 @@ function openScheduleModal(rect, existingEntry = null) {
         editingType = null;
         if (planRadio) planRadio.disabled = false;
         if (taskRadio) taskRadio.disabled = false;
+        if (hiddenCheckbox) hiddenCheckbox.checked = false;   // ← 追加
 
         editingKey = null;
         existingId = null;

@@ -6,7 +6,7 @@ const tabs = document.querySelectorAll('.tab');
 const panes = document.querySelectorAll('.tab-pane');
 
 const updateBackground = (activeTab) => {
-    if (!activeTab) return;
+    if (!activeTab || !background) return;
     const tabLeft = activeTab.offsetLeft;
     const tabWidth = activeTab.offsetWidth;
 
@@ -17,8 +17,9 @@ const updateBackground = (activeTab) => {
 document.addEventListener('DOMContentLoaded', () => {
     tabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
+            const clickedTab = e.target.closest('.tab');
+            if (!clickedTab || !Array.from(tabs).includes(clickedTab)) return;
             tabs.forEach(t => t.classList.remove('active'));
-            const clickedTab = e.target;
             clickedTab.classList.add('active');
 
             updateBackground(clickedTab);
@@ -38,13 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('load', () => {
     const active = document.querySelector('.tab.active');
-    setTimeout(() => {
-        updateBackground(active);
-        active.dispatchEvent(new Event("click"))
-        
-        // ToDoタブの初期化
-        setupTodoTab(API_BASE_URL, 'todo-content');
-    }, 1000);
+    updateBackground(active);
+    // ToDoタブの初期化
+    setupTodoTab(API_BASE_URL, 'todo-content');
 });
 
 window.addEventListener('resize', () => {

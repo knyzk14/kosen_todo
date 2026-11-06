@@ -414,7 +414,7 @@ if (userMoreContainer) {
         if (confirm('ログアウトしますか？')) {
             try {
                 await auth.signOut();
-                window.location.href = '/login.html';
+                window.location.href = '/login';
             } catch (error) {
                 console.error('ログアウトエラー:', error);
                 alert('ログアウトに失敗しました');

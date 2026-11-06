@@ -16,7 +16,7 @@ export function renderFreeBusyMembers(members) {
         item.classList.add("freetime-member-item");
         item.dataset.id = member.username;
         
-        if (auth.currentUser && auth.currentUser.email.startsWith(member.username)) {
+        if (auth.currentUser && auth.currentUser.email.split("@")[0] === member.username) {
             item.classList.add("active");
         }
 
@@ -74,15 +74,13 @@ export function setupFreeBusy(apiBaseUrl) {
     //     });
     // }
 
-    if (btnSearch) {
+    if (btnSearch && container && resultsContainer && startTimeInput && endTimeInput) {
         btnSearch.addEventListener("click", async function() {
-            
-            const activeItems = container.querySelectorAll(
-                ".freetime-member-item:has(.freetime-member-check:checked)"
-            );
-
-            const selectedUsernames = Array.from(activeItems)
-                .map(item => item.dataset.id);
+            const selectedUsernames = Array.from(
+                container.querySelectorAll(".freetime-member-check:checked")
+            )
+                .map(checkbox => checkbox.closest(".freetime-member-item")?.dataset.id)
+                .filter(Boolean);
 
             if (selectedUsernames.length === 0) {
                 alert("検索対象のユーザーを選択してください。");
@@ -94,18 +92,24 @@ export function setupFreeBusy(apiBaseUrl) {
                 return;
             }
 
+            const startDate = new Date(startTimeInput.value);
+            const endDate = new Date(endTimeInput.value);
+            if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+                alert("有効な検索期間を入力してください。");
+                return;
+            }
+            if (startDate >= endDate) {
+                alert("終了日時は開始日時より後に設定してください。");
+                return;
+            }
+
             const toLocalISOString = (date) => {
                 const tzOffset = date.getTimezoneOffset() * 60000;
                 return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1); // Zを削除し、ローカル時刻のままAPIへ
             };
 
-            const startAt = toLocalISOString(new Date(startTimeInput.value));
-            const endAt = toLocalISOString(new Date(endTimeInput.value));
-
-            if (new Date(startAt) >= new Date(endAt)) {
-                alert("終了日時は開始日時より後に設定してください。");
-                return;
-            }
+            const startAt = toLocalISOString(startDate);
+            const endAt = toLocalISOString(endDate);
 
             const payload = {
                 usernames: selectedUsernames,
@@ -113,6 +117,7 @@ export function setupFreeBusy(apiBaseUrl) {
                 end_at: endAt
             };
 
+            btnSearch.disabled = true;
             resultsContainer.innerHTML = "<p>検索中...</p>";
 
             try {
@@ -130,6 +135,8 @@ export function setupFreeBusy(apiBaseUrl) {
             } catch (e) {
                 console.error(e);
                 resultsContainer.innerHTML = "<p style='color:red;'>エラーが発生しました。</p>";
+            } finally {
+                btnSearch.disabled = false;
             }
         });
     }

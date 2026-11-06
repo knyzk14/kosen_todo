@@ -20,6 +20,7 @@ const showDay = document.querySelector("#showDay");
 const modalButtons = document.querySelector(".modal-buttons");
 
 let editingKey = null;
+let editingType = null;
 let existingId = null;
 
 const planCount = document.querySelector("#plan");
@@ -134,12 +135,12 @@ async function loadDataFromAPI() {
                 id: event.id,
                 title: event.title,
                 type: "plan",
+                isPrivate: event.is_private,
 
                 // 編集するときに必要
                 startAt: event.start_at,
                 endAt: event.end_at
             };
-
             if (isMultiDay) {
                 // 日をまたぐ予定
                 // 開始日から終了日まで、それぞれの日の上部に表示する
@@ -165,24 +166,48 @@ async function loadDataFromAPI() {
             }
         });
 
-                apiData.todos.forEach(todo => {
-                    const dueDate = new Date(todo.due_date);
-                    const startDate = todo.start_at
-                        ? new Date(todo.start_at)
-                        : new Date(dueDate.getTime() - 60 * 60 * 1000);
+        apiData.todos.forEach(todo => {
+            const dueDate = new Date(todo.due_date);
+            const startDate = todo.start_at
+                ? new Date(todo.start_at)
+                : new Date(dueDate.getTime() - 60 * 60 * 1000);
+            const startKey = getDateKey(startDate);
+            const endKey = getDateKey(dueDate);
 
-                    const startKey = getDateKey(startDate);
-                    const endKey = getDateKey(dueDate);
-                    const isMultiDay = startKey !== endKey;
-
-            data[year][month][day][timeStr] = {
+            const startStr =
+                `${String(startDate.getHours()).padStart(2, "0")}:` +
+                `${String(startDate.getMinutes()).padStart(2, "0")}`;
+            const endStr =
+                `${String(dueDate.getHours()).padStart(2, "0")}:` +
+                `${String(dueDate.getMinutes()).padStart(2, "0")}`;
+            const eventInfo = {
                 id: todo.id,
                 title: todo.title,
                 type: "task",
+                isPrivate: todo.is_private,   // ← 追加
                 completed: todo.assignments && todo.assignments[omuid] ? todo.assignments[omuid].completed : false,
                 source: todo.source,
-                external_id: todo.external_id
+                external_id: todo.external_id,
+                startAt: todo.start_at || startDate.toISOString(),
+                endAt: todo.due_date
             };
+
+            if (startKey !== endKey) {
+                let current = new Date(startDate);
+                while (getDateKey(current) <= endKey) {
+                    addAllDayEvent(new Date(current), eventInfo);
+                    current.setDate(current.getDate() + 1);
+                }
+                return;
+            }
+
+            const year = startDate.getFullYear();
+            const month = startDate.getMonth() + 1;
+            const day = startDate.getDate();
+            if (!data[year]) data[year] = {};
+            if (!data[year][month]) data[year][month] = {};
+            if (!data[year][month][day]) data[year][month][day] = {};
+            data[year][month][day][`${startStr} - ${endStr}`] = eventInfo;
         });
     } catch (e) {
         console.error(e);
@@ -206,6 +231,7 @@ let scheduleOpen = false;
 const startTime = document.querySelector("#start-time");
 const endTime = document.querySelector("#end-time");
 const scheduleTitle = document.querySelector("#schedule-title");
+const hiddenCheckbox = document.querySelector("#schedule-hidden"); 
 const schedule_ok = document.querySelector("#schedule-ok");
 const scheduleCancel = document.querySelector("#schedule-cancel");
 
@@ -231,6 +257,7 @@ function updateMonthlyCounts(year = currentYear, month = currentMonth) {
     let taskTotal = 0;
     const monthData = data?.[year]?.[month + 1];
 
+    // 1日以内の予定・タスク
     if (monthData) {
         Object.values(monthData).forEach(daySchedule => {
             Object.values(daySchedule).forEach(entry => {
@@ -242,6 +269,28 @@ function updateMonthlyCounts(year = currentYear, month = currentMonth) {
             });
         });
     }
+
+    // 日をまたぐ予定・タスク（表示中の月にかかっているものを1件ずつ数える）
+    const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}-`;
+    const countedMultiDay = new Set();
+
+    Object.entries(allDayEvents).forEach(([dateKey, entries]) => {
+        if (!dateKey.startsWith(monthPrefix)) return;
+
+        entries.forEach(entry => {
+            const uniqueKey = `${entry.type}:${entry.id}`;
+            if (countedMultiDay.has(uniqueKey)) return;
+            countedMultiDay.add(uniqueKey);
+
+            if (entry.type === "task") {
+                taskTotal++;
+            } else {
+                planTotal++;
+            }
+        });
+    }
+    );
+
     if (planCount) planCount.textContent = ` ${planTotal}`;
     if (taskCount) taskCount.textContent = ` ${taskTotal}`;
 }
@@ -271,23 +320,54 @@ function createCalendar(year, month) {
         day.appendChild(p);
         day.appendChild(hr);
 
+        const date = new Date(year, month, i);
+        const dateKey = getDateKey(date);
         const dayEntries = data?.[year]?.[month + 1]?.[i] || {};
-        const upcomingEntries = Object.entries(dayEntries)
-            .sort(([timeA], [timeB]) => timeA.localeCompare(timeB))
+        const visibleEntries = Object.entries(dayEntries).map(([time, entry]) => ({
+            sortTime: time.slice(0, 5),
+            timeLabel: time.split(" - ")[0],
+            entry
+        }));
+        (allDayEvents[dateKey] || []).forEach(entry => {
+            const startDate = new Date(entry.startAt);
+            const startsToday = getDateKey(startDate) === dateKey;
+            const startTimeLabel = `${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")}`;
+            const timeLabel = startsToday ? startTimeLabel : "";
+            visibleEntries.push({
+                sortTime: startTimeLabel,
+                timeLabel,
+                entry,
+                continuation: !startsToday,
+                endsToday: getDateKey(new Date(entry.endAt)) === dateKey,
+                weekday: date.getDay()
+            });
+        });
+        const upcomingEntries = visibleEntries
+            .sort((a, b) => a.sortTime.localeCompare(b.sortTime))
             .slice(0, 3);
         if (upcomingEntries.length > 0) {
             const scheduleList = document.createElement("ul");
             scheduleList.className = "day-schedules";
-            upcomingEntries.forEach(([time, entry]) => {
+            upcomingEntries.forEach(({ timeLabel, entry, continuation, endsToday, weekday }) => {
                 const item = document.createElement("li");
                 item.className = `day-schedule-item day-schedule-${entry.type}`;
-                const timeLabel = document.createElement("span");
-                timeLabel.className = "day-schedule-time";
-                timeLabel.textContent = time.split(" - ")[0];
+                if (entry.startAt && entry.endAt && getDateKey(new Date(entry.startAt)) !== getDateKey(new Date(entry.endAt))) {
+                    item.classList.add(continuation ? "day-schedule-continuation" : "day-schedule-multiday-start");
+                    if (continuation && weekday === 0) item.classList.add("day-schedule-week-start");
+                    if (endsToday || weekday === 6) item.classList.add("day-schedule-segment-end");
+                }
+                if (continuation) {
+                    item.setAttribute("aria-label", `${entry.title}（継続中）`);
+                    scheduleList.appendChild(item);
+                    return;
+                }
+                const time = document.createElement("span");
+                time.className = "day-schedule-time";
+                time.textContent = timeLabel;
                 const title = document.createElement("span");
                 title.className = "day-schedule-title";
                 title.textContent = entry.title;
-                item.append(timeLabel, title);
+                item.append(time, title);
                 scheduleList.appendChild(item);
             });
             day.appendChild(scheduleList);
@@ -398,8 +478,10 @@ if (schedule_ok) {
         const start = startTime.value;
         const end = endTime.value;
         const title = scheduleTitle.value;
-        const type = taskRadio.checked ? "task" : (planRadio.checked ? "plan" : null);
-
+        const isPrivate = hiddenCheckbox ? hiddenCheckbox.checked : false;   // ← 追加
+        const type = existingId
+            ? editingType
+            : (taskRadio.checked ? "task" : (planRadio.checked ? "plan" : null));
         if (start === "" || end === "" || title === "" || !type) {
             alert("入力されていない項目があります．");
             return;
@@ -428,7 +510,8 @@ if (schedule_ok) {
                     calendar_id: activeCalendarId,
                     title: title,
                     start_at: toLocalISOString(startDate),
-                    end_at: toLocalISOString(endDate)
+                    end_at: toLocalISOString(endDate),
+                    is_private: isPrivate   // ← 追加
                 };
                         } else if (type === "task") {
                             endpoint = existingId ? `${API_BASE_URL}/api/todos/${existingId}` : `${API_BASE_URL}/api/todos`;
@@ -438,6 +521,7 @@ if (schedule_ok) {
                                 title: title,
                                 start_at: toLocalISOString(startDate),
                                 due_date: toLocalISOString(endDate),
+                                is_private: isPrivate,   // ← 追加
                                 assignments: {
                                     [userid]: { assigned: true, completed: false }
                                 }
@@ -471,21 +555,37 @@ if (schedule_ok) {
 async function handleDeleteSchedule() {
     if (!existingId) return;
 
-    const type = taskRadio.checked ? "task" : "plan";
-    const endpoint = type === "plan" ? `${API_BASE_URL}/api/events/${existingId}` : `${API_BASE_URL}/api/todos/${existingId}`;
+    const type = editingType === "task" ? "task" : "plan";
+    const endpoint = type === "plan"
+        ? `${API_BASE_URL}/api/events/${existingId}`
+        : `${API_BASE_URL}/api/todos/${existingId}`;
 
     try {
-        await fetch(endpoint, { method: "DELETE" });
+        const res = await fetch(endpoint, { method: "DELETE" });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error("削除APIエラー:", res.status, errorText);
+
+            if (res.status === 403) {
+                alert("削除する権限がありません．（作成者かカレンダーのオーナーのみ削除できます）");
+            } else if (res.status === 404) {
+                alert("すでに削除されているか、見つかりませんでした．");
+            } else {
+                alert(`削除に失敗しました（${res.status}）`);
+            }
+            return;
+        }
+
         sessionStorage.setItem("reopenDayView", JSON.stringify({
             year: selectedYear, month: selectedMonth, day: selectedDay
         }));
         location.reload();
-    } catch(e) {
+    } catch (e) {
         console.error("削除失敗", e);
         alert("削除に失敗しました");
     }
 }
-
 // --- 1日表示 (Day View) ---
 function openDayView() {
     if (dayViewTitle) dayViewTitle.textContent = `${selectedMonth + 1}月${selectedDay}日の予定`;
@@ -577,7 +677,8 @@ function renderAllDayEvents() {
                 endAt: entry.endAt,
                 title: entry.title,
                 type: entry.type,
-                id: entry.id
+                id: entry.id,
+                isPrivate: entry.isPrivate   // ← 追加
             });
         });
 
@@ -626,7 +727,23 @@ function renderDayview() {
             let start = timeToMinutes(startStr);
             let end = timeToMinutes(endStr);
             if (end <= start) end = start + 30;
-            return { time, startStr, endStr, start, end, title: info.title, type: info.type || "plan", id: info.id, completed: info.completed, source: info.source, external_id: info.external_id };
+            return {
+                time,
+                startStr,
+                endStr,
+                start,
+                end,
+                startAt: info.startAt,
+                endAt: info.endAt,
+                isPrivate: info.isPrivate,   // ← 追加
+
+                title: info.title,
+                type: info.type || "plan",
+                id: info.id,
+                completed: info.completed,
+                source: info.source,
+                external_id: info.external_id
+            };
         });
 
         entries.sort((a, b) => a.start - b.start);
@@ -739,7 +856,8 @@ function renderDayview() {
                     endAt: entry.endAt,
                     title: entry.title,
                     type: entry.type,
-                    id: entry.id
+                    id: entry.id,
+                    isPrivate: entry.isPrivate   // ← 追加
                 });
             });
         });
@@ -839,6 +957,11 @@ function openScheduleModal(rect, existingEntry = null) {
             if (planRadio) planRadio.checked = true;
         }
 
+        editingType = existingEntry.type === "task" ? "task" : "plan";
+        if (planRadio) planRadio.disabled = true;
+        if (taskRadio) taskRadio.disabled = true;
+        if (hiddenCheckbox) hiddenCheckbox.checked = !!existingEntry.isPrivate;   // ← 追加
+
         editingKey = existingEntry.time || null;
         existingId = existingEntry.id;
 
@@ -849,6 +972,11 @@ function openScheduleModal(rect, existingEntry = null) {
         if (scheduleTitle) scheduleTitle.value = "";
         if (planRadio) planRadio.checked = false;
         if (taskRadio) taskRadio.checked = false;
+
+        editingType = null;
+        if (planRadio) planRadio.disabled = false;
+        if (taskRadio) taskRadio.disabled = false;
+        if (hiddenCheckbox) hiddenCheckbox.checked = false;   // ← 追加
 
         editingKey = null;
         existingId = null;

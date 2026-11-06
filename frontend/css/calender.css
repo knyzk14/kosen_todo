@@ -164,7 +164,7 @@
     padding: 0 4px;
     box-sizing: border-box;
     list-style: none;
-    overflow: hidden;
+    overflow: visible;
     font-size: clamp(0.55rem, 0.75vw, 0.75rem);
     text-align: left;
 }
@@ -206,6 +206,62 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.day-schedule-multiday-start,
+.day-schedule-continuation {
+    position: relative;
+    box-sizing: border-box;
+    overflow: visible;
+    border-top: 1.5px solid #4386d4;
+    border-bottom: 1.5px solid #4386d4;
+}
+
+.day-schedule-multiday-start {
+    margin-right: -5px;
+    padding-right: 5px;
+    border-left: 1.5px solid #4386d4;
+    border-radius: 999px 0 0 999px;
+}
+
+.day-schedule-continuation {
+    height: 1.4em;
+    margin-right: -5px;
+    margin-left: -5px;
+    padding-right: 5px;
+    padding-left: 5px;
+    grid-template-columns: 1fr;
+    border-right: 0;
+    border-left: 0;
+}
+
+.day-schedule-week-start {
+    margin-left: 0;
+    padding-left: 5px;
+    border-left: 1.5px solid #4386d4;
+    border-radius: 999px 0 0 999px;
+}
+
+.day-schedule-segment-end {
+    margin-right: 0;
+    padding-right: 5px;
+    border-right: 1.5px solid #4386d4;
+    border-radius: 0 999px 999px 0;
+}
+
+.day-schedule-task.day-schedule-multiday-start,
+.day-schedule-task.day-schedule-continuation {
+    border-top-color: #e08a35;
+    border-bottom-color: #e08a35;
+}
+
+.day-schedule-task.day-schedule-multiday-start,
+.day-schedule-task.day-schedule-week-start {
+    border-left-color: #e08a35;
+}
+
+.day-schedule-task.day-schedule-segment-end {
+    border-right-color: #e08a35;
 }
 
 .days div hr {
